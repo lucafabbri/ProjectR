@@ -31,7 +31,7 @@ namespace ProjectR.Sample.Api.Controllers
             // --- USAGE OF ProjectAs ---
             // The mapper handles the complex projection, including the nested
             // Money object and the collection of Reviews.
-            var productDto = product.ProjectAs<ProductDto, Product, ProductMapper>();
+            var productDto = product.ProjectAs<ProductDto, Product, ProductDtoMapper>();
             return Ok(productDto);
         }
 
@@ -46,7 +46,7 @@ namespace ProjectR.Sample.Api.Controllers
 
             _products.Add(newProduct);
 
-            return CreatedAtAction(nameof(GetById), new { id = newProduct.Id }, new ProductMapper().ProjectAs(newProduct));
+            return CreatedAtAction(nameof(GetById), new { id = newProduct.Id }, new ProductDtoMapper().ProjectAs(newProduct));
         }
 
         [HttpPut("{id}")]
@@ -61,7 +61,7 @@ namespace ProjectR.Sample.Api.Controllers
             // --- USAGE OF ApplyTo ---
             // The mapper applies the changes from the DTO to the existing entity.
             // The default policy will map matching properties (`Name`) and ignore others (`Id`).
-            new ProductMapper().ApplyTo(new ProductDto { Name = updateDto.Name }, productToUpdate);
+            new ProductDtoMapper().ApplyTo(new ProductDto { Name = updateDto.Name }, productToUpdate);
             // In a real app, you would call _repository.SaveChanges() here.
 
             return NoContent();

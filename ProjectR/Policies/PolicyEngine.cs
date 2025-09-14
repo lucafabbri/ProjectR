@@ -118,7 +118,7 @@ namespace ProjectR
             {
                 if (invocation.Expression is not MemberAccessExpressionSyntax memberAccess) continue;
                 var symbol = _semanticModel.GetSymbolInfo(invocation).Symbol as IMethodSymbol;
-                if (symbol == null || !IsPartOfCorrectPolicyChain(memberAccess.Expression, initialMethodName)) continue;
+                if (symbol == null || !IsPartOfCorrectPolicyChain(invocation, initialMethodName)) continue;
 
                 switch (symbol.Name)
                 {
@@ -137,19 +137,31 @@ namespace ProjectR
                         else if (symbol.Name == "IgnoreId")
                             policy.IgnoredMembers.Add("Id");
                         break;
+
+                    case "From":
                     case "FromSource":
-                        if (memberAccess.Expression is InvocationExpressionSyntax mapInvocation &&
-                            mapInvocation.ArgumentList.Arguments.FirstOrDefault()?.Expression is LambdaExpressionSyntax destLambda &&
+                        if (memberAccess.Expression is InvocationExpressionSyntax parentInvocation &&
                             invocation.ArgumentList.Arguments.FirstOrDefault()?.Expression is LambdaExpressionSyntax sourceLambda)
                         {
-                            var mapSymbol = _semanticModel.GetSymbolInfo(mapInvocation).Symbol as IMethodSymbol;
-                            var destMemberName = GetMemberNameFromExpression(destLambda);
-                            if (mapSymbol != null && !string.IsNullOrEmpty(destMemberName))
+                            var parentSymbol = _semanticModel.GetSymbolInfo(parentInvocation).Symbol as IMethodSymbol;
+                            if (parentSymbol == null) continue;
+
+                            if (parentSymbol.Name == "Map")
                             {
-                                if (mapSymbol.Name == "Map")
-                                    policy.MemberMappings[destMemberName] = sourceLambda;
-                                else if (mapSymbol.Name == "MapParameter")
-                                    policy.ParameterMappings[destMemberName] = sourceLambda;
+                                if (parentInvocation.ArgumentList.Arguments.FirstOrDefault()?.Expression is LambdaExpressionSyntax destLambda)
+                                {
+                                    var destMemberName = GetMemberNameFromExpression(destLambda);
+                                    if (!string.IsNullOrEmpty(destMemberName))
+                                        policy.MemberMappings[destMemberName] = sourceLambda;
+                                }
+                            }
+                            else if (parentSymbol.Name == "MapParameter")
+                            {
+                                if (parentInvocation.ArgumentList.Arguments.FirstOrDefault()?.Expression is LiteralExpressionSyntax literal)
+                                {
+                                    var parameterName = literal.Token.ValueText;
+                                    policy.ParameterMappings[parameterName] = sourceLambda;
+                                }
                             }
                         }
                         break;
@@ -162,27 +174,43 @@ namespace ProjectR
         {
             if (expression is LambdaExpressionSyntax lambda)
             {
-                if (lambda.Body is not ExpressionSyntax bodyExpression) return string.Empty;
-                expression = bodyExpression;
+                var body = lambda.Body;
+
+                // Handle boxing conversion, e.g., x => (object)x.Property
+                if (body is CastExpressionSyntax cast)
+                {
+                    body = cast.Expression;
+                }
+
+                if (body is MemberAccessExpressionSyntax member)
+                {
+                    return member.Name.Identifier.Text;
+                }
             }
-            if (expression is MemberAccessExpressionSyntax member) return member.Name.Identifier.Text;
-            if (expression is CastExpressionSyntax cast && cast.Expression is MemberAccessExpressionSyntax castMember) return castMember.Name.Identifier.Text;
-            if (expression is LiteralExpressionSyntax literal) return literal.Token.ValueText;
             return string.Empty;
         }
 
         private bool IsPartOfCorrectPolicyChain(ExpressionSyntax expression, string initialMethodName)
         {
-            if (expression is InvocationExpressionSyntax invocation)
+            while (expression != null)
             {
-                var symbol = _semanticModel.GetSymbolInfo(invocation).Symbol as IMethodSymbol;
-                if (symbol?.Name == initialMethodName) return true;
-                if (invocation.Expression is MemberAccessExpressionSyntax memberAccess)
-                    return IsPartOfCorrectPolicyChain(memberAccess.Expression, initialMethodName);
-            }
-            else if (expression is IdentifierNameSyntax identifier)
-            {
-                return _semanticModel.GetSymbolInfo(identifier).Symbol is IParameterSymbol;
+                if (expression is InvocationExpressionSyntax invocation)
+                {
+                    var symbol = _semanticModel.GetSymbolInfo(invocation).Symbol as IMethodSymbol;
+                    if (symbol?.Name == initialMethodName) return true;
+
+                    if (invocation.Expression is MemberAccessExpressionSyntax memberAccess)
+                    {
+                        expression = memberAccess.Expression;
+                        continue;
+                    }
+                }
+                else if (expression is IdentifierNameSyntax identifier)
+                {
+                    // Reached the config parameter (e.g., "config.ForCreation(...)")
+                    return _semanticModel.GetSymbolInfo(identifier).Symbol is IParameterSymbol;
+                }
+                return false;
             }
             return false;
         }

@@ -6,7 +6,7 @@ using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Diagnostics;
 using System.Linq;
-using System.Numerics;
+using System.Threading;
 
 namespace ProjectR
 {
@@ -15,55 +15,100 @@ namespace ProjectR
     {
         public MapperGenerator()
         {
-//#if DEBUG
-//            if (!Debugger.IsAttached)
-//            {
-//                Debugger.Launch();
-//            }
-//#endif
+            //#if DEBUG
+            //            if (!Debugger.IsAttached)
+            //            {
+            //                Debugger.Launch();
+            //            }
+            //#endif
         }
 
         public void Initialize(IncrementalGeneratorInitializationContext context)
         {
-            var classDeclarations = context.SyntaxProvider
-                .CreateSyntaxProvider(
-                    predicate: static (s, _) => s is ClassDeclarationSyntax,
-                    transform: static (ctx, _) => GetMapperClass(ctx))
-                .Where(static c => c is not null);
+            var compilationAndClasses = context.CompilationProvider
+                .Select((compilation, ct) =>
+                {
+                    var explicitMappers = new Dictionary<string, ClassDeclarationSyntax>();
+                    var dtosWithAttribute = new List<(INamedTypeSymbol DtoSymbol, INamedTypeSymbol EntitySymbol)>();
 
-            var compilationAndClasses = context.CompilationProvider.Combine(classDeclarations.Collect());
+                    var mapperBaseSymbol = compilation.GetTypeByMetadataName("ProjectR.Mapper`2");
+                    var dtoAttributeSymbol = compilation.GetTypeByMetadataName("ProjectR.Attributes.DtoAttribute`1");
+
+                    // First pass: Find all explicit mappers and DTOs with attributes
+                    foreach (var tree in compilation.SyntaxTrees)
+                    {
+                        var semanticModel = compilation.GetSemanticModel(tree);
+                        foreach (var classNode in tree.GetRoot(ct).DescendantNodes().OfType<ClassDeclarationSyntax>())
+                        {
+                            if (semanticModel.GetDeclaredSymbol(classNode, ct) is not INamedTypeSymbol classSymbol) continue;
+
+                            // Check for explicit mapper
+                            if (mapperBaseSymbol != null && classSymbol.BaseType is { IsGenericType: true } &&
+                                SymbolEqualityComparer.Default.Equals(classSymbol.BaseType.OriginalDefinition, mapperBaseSymbol))
+                            {
+                                explicitMappers[classSymbol.Name] = classNode;
+                            }
+
+                            // Check for DTO attribute
+                            var attribute = classSymbol.GetAttributes().FirstOrDefault(ad =>
+                                dtoAttributeSymbol != null && ad.AttributeClass?.OriginalDefinition.Equals(dtoAttributeSymbol, SymbolEqualityComparer.Default) == true);
+
+                            if (attribute?.AttributeClass is { TypeArguments.Length: 1 } &&
+                                attribute.AttributeClass.TypeArguments[0] is INamedTypeSymbol entitySymbol)
+                            {
+                                dtosWithAttribute.Add((classSymbol, entitySymbol));
+                            }
+                        }
+                    }
+
+                    return (compilation, explicitMappers, dtosWithAttribute);
+                });
+
 
             context.RegisterSourceOutput(compilationAndClasses,
-                static (spc, source) => Execute(source.Left, source.Right, spc));
+                static (spc, source) => Execute(source.compilation, source.explicitMappers, source.dtosWithAttribute, spc));
         }
 
-        private static ClassDeclarationSyntax? GetMapperClass(GeneratorSyntaxContext context)
+
+        private static void Execute(Compilation compilation,
+                                    Dictionary<string, ClassDeclarationSyntax> explicitMappers,
+                                    List<(INamedTypeSymbol DtoSymbol, INamedTypeSymbol EntitySymbol)> dtosWithAttribute,
+                                    SourceProductionContext context)
         {
-            var classDeclaration = (ClassDeclarationSyntax)context.Node;
-            if (context.SemanticModel.GetDeclaredSymbol(classDeclaration) is not INamedTypeSymbol namedTypeSymbol)
-                return null;
+            var allMapperClassesToImplement = new List<ClassDeclarationSyntax>(explicitMappers.Values);
+            var placeholderSyntaxTrees = new List<SyntaxTree>();
 
-            var baseType = namedTypeSymbol.BaseType;
-            if (baseType == null || !baseType.IsGenericType)
-                return null;
-
-            if (baseType.Name == "Mapper" && baseType.ContainingNamespace.ToDisplayString() == "ProjectR")
+            // Generate placeholders for DTOs that don't have an explicit mapper
+            foreach (var (dtoSymbol, entitySymbol) in dtosWithAttribute)
             {
-                return classDeclaration;
+                var mapperName = $"{dtoSymbol.Name}Mapper";
+                if (!explicitMappers.ContainsKey(mapperName))
+                {
+                    var entityFullName = entitySymbol.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat);
+                    var dtoFullName = dtoSymbol.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat);
+                    var ns = dtoSymbol.ContainingNamespace.IsGlobalNamespace ? "" : $"namespace {dtoSymbol.ContainingNamespace.ToDisplayString()}";
+
+                    var sourceText = $@"// <auto-generated-placeholder/>
+{ns}
+{{
+    public partial class {mapperName} : global::ProjectR.Mapper<{entityFullName}, {dtoFullName}> {{ }}
+}}";
+                    context.AddSource($"{mapperName}.ph.g.cs", sourceText);
+                    var syntaxTree = CSharpSyntaxTree.ParseText(sourceText, path: $"{mapperName}.ph.g.cs");
+                    placeholderSyntaxTrees.Add(syntaxTree);
+
+                    var placeholderClassNode = syntaxTree.GetRoot().DescendantNodes().OfType<ClassDeclarationSyntax>().First();
+                    allMapperClassesToImplement.Add(placeholderClassNode);
+                }
             }
 
-            return null;
-        }
-
-        private static void Execute(Compilation compilation, ImmutableArray<ClassDeclarationSyntax?> classes, SourceProductionContext context)
-        {
-            if (classes.IsDefaultOrEmpty) return;
-
-            var distinctClasses = classes.Where(c => c is not null).Distinct().Select(c => c!).ToList();
+            var compilationWithPlaceholders = compilation.AddSyntaxTrees(placeholderSyntaxTrees);
+            var distinctClasses = allMapperClassesToImplement.Distinct().ToList();
             var allMappers = new List<INamedTypeSymbol>();
+
             foreach (var mapperClass in distinctClasses)
             {
-                var semanticModel = compilation.GetSemanticModel(mapperClass.SyntaxTree);
+                var semanticModel = compilationWithPlaceholders.GetSemanticModel(mapperClass.SyntaxTree);
                 if (semanticModel.GetDeclaredSymbol(mapperClass) is INamedTypeSymbol symbol)
                 {
                     allMappers.Add(symbol);
@@ -74,11 +119,26 @@ namespace ProjectR
             {
                 try
                 {
-                    ProcessMapperClass(compilation, mapperClass, context, allMappers);
+                    ProcessMapperClass(compilationWithPlaceholders, mapperClass, context, allMappers);
                 }
                 catch (Exception ex)
                 {
                     context.ReportDiagnostic(Diagnostic.Create(Diagnostics.UnexpectedError, mapperClass.GetLocation(), ex.Message, ex.StackTrace));
+                }
+            }
+        }
+
+        private static void CollectUsings(ITypeSymbol typeSymbol, HashSet<string> usings)
+        {
+            foreach (var syntaxRef in typeSymbol.DeclaringSyntaxReferences)
+            {
+                var syntaxNode = syntaxRef.GetSyntax();
+                if (syntaxNode?.SyntaxTree?.GetRoot() is CompilationUnitSyntax root)
+                {
+                    foreach (var u in root.Usings)
+                    {
+                        usings.Add(u.ToString());
+                    }
                 }
             }
         }
@@ -95,24 +155,26 @@ namespace ProjectR
             var sourceType = baseType.TypeArguments[0];
             var destinationType = baseType.TypeArguments[1];
 
-            // The generator's main job is to find the policy method (if it exists)
-            // and pass it to the unified PolicyEngine.
+            var allUsings = new HashSet<string>();
+            CollectUsings(mapperSymbol, allUsings);
+            CollectUsings(sourceType, allUsings);
+            CollectUsings(destinationType, allUsings);
+
             var policyMethodSyntax = mapperSymbol.GetMembers("ConfigureMappingPolicies")
                 .FirstOrDefault(m => m.IsStatic && !m.IsImplicitlyDeclared)?
                 .DeclaringSyntaxReferences.FirstOrDefault()?.GetSyntax() as MethodDeclarationSyntax;
 
+            // Use the provided compilation which includes placeholders
             var engine = new PolicyEngine(compilation, policyMethodSyntax, allMappers);
 
             var projectAsPlan = engine.CreateProjectAsPlan(sourceType, destinationType);
             var buildPlan = engine.CreateBuildPlan(destinationType, sourceType);
             var applyToPlan = engine.CreateApplyToPlan(destinationType, sourceType);
 
-            // Report all diagnostics gathered during plan creation.
             projectAsPlan.Diagnostics.ForEach(context.ReportDiagnostic);
             buildPlan.Diagnostics.ForEach(context.ReportDiagnostic);
             applyToPlan.Diagnostics.ForEach(context.ReportDiagnostic);
 
-            // If the Build plan is invalid, stop generation for this mapper.
             if (buildPlan.Creation.Method == CreationMethod.None)
             {
                 context.ReportDiagnostic(Diagnostic.Create(Diagnostics.NoValidCreationMethod, mapperClass.Identifier.GetLocation(), buildPlan.DestinationType.Name));
@@ -120,7 +182,7 @@ namespace ProjectR
             }
 
             var codeBuilder = new CodeBuilder();
-            var sourceCode = codeBuilder.BuildSource(mapperSymbol, projectAsPlan, buildPlan, applyToPlan);
+            var sourceCode = codeBuilder.BuildSource(mapperSymbol, projectAsPlan, buildPlan, applyToPlan, allUsings);
 
             context.AddSource($"{mapperSymbol.Name}.g.cs", sourceCode);
         }
