@@ -121,9 +121,9 @@ public partial class CreateProductDtoMapper
         config.ForCreation<CreateProductDto, Product>()
               // Instruct the engine to prioritize using a static factory for creation.
               .Try(MappingStrategy.UseStaticFactories)
-              // The ""price"" parameter of the Product.Create factory is complex.
+              // The "price" parameter of the Product.Create factory is complex.
               // We provide a custom expression to build the Money object from the DTO.
-              .MapParameter(""price"")
+              .MapParameter("price")
               .FromSource(dto => new Money(dto.PriceAmount, dto.PriceCurrency));
     }
 }
