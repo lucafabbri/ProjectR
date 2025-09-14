@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [versionize](https://github.com/versionize/versionize) for commit guidelines.
 
+<a name="0.2.1"></a>
+## [0.2.1](https://www.github.com/lucafabbri/ProjectR/releases/tag/v0.2.1) (2025-09-14)
+
+### Bug Fixes
+
+* corrects reference to source code page ([8c335be](https://www.github.com/lucafabbri/ProjectR/commit/8c335be2c1d1b794f628f4c21a5dccfe040d2107))
+
 <a name="0.2.0"></a>
 ## [0.2.0](https://www.github.com/lucafabbri/ProjectR/releases/tag/v0.2.0) (2025-09-14)
 
