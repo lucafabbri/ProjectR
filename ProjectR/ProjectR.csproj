@@ -16,7 +16,7 @@
     <Description>
       ProjectR: Unopinionated object mapping. No black magic. Just your rules, transparently automated.
     </Description>
-    <RepositoryUrl>https://github.com/lucafabbri/TransactR</RepositoryUrl>
+    <RepositoryUrl>https://github.com/lucafabbri/ProjectR</RepositoryUrl>
     <PackageTags>mapper;lucafabbri</PackageTags>
     <PackageReadmeFile>README.md</PackageReadmeFile>
     <PackageLicenseExpression>MIT</PackageLicenseExpression>
