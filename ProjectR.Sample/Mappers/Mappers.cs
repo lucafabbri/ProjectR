@@ -4,23 +4,9 @@ using ProjectR.Sample.Application.DTOs;
 
 namespace ProjectR.Sample.Application.Mappers
 {
-    ///// <summary>
-    ///// A simple mapper for the Money value object.
-    ///// ProjectR handles this with its "zero-config" default policy.
-    ///// </summary>
-    //public partial class MoneyMapper : Mapper<Money, MoneyDto> { } 
+    public partial class UpdateProductMapper : Mapper<Product, UpdateProductDto> { 
 
-    ///// <summary>
-    ///// A simple mapper for the Review entity.
-    ///// Also handled by the "zero-config" default policy.
-    ///// </summary>
-    //public partial class ReviewMapper : Mapper<Review, ReviewDto> { }
-
-    ///// <summary>
-    ///// This mapper handles the standard projection from the Product entity to the ProductDto.
-    ///// It's "zero-config" because it relies on the MoneyMapper and ReviewMapper for its complex properties.
-    ///// </summary>
-    //public partial class ProductMapper : Mapper<Product, ProductDto> { }
+    }
 
     /// <summary>
     /// A specialized mapper dedicated to creating a Product entity from a CreateProductDto.

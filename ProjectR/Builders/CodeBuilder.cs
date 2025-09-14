@@ -94,8 +94,8 @@ namespace ProjectR
         {
             var sourceTypeName = plan.SourceType.ToDisplayString();
             var destTypeName = plan.DestinationType.ToDisplayString();
-            BuildXmlDoc(mapperSymbol, "ProjectAs");
-            Indent(); _sb.AppendLine($"public override {destTypeName} ProjectAs({sourceTypeName} source)");
+            BuildXmlDoc(mapperSymbol, "Project");
+            Indent(); _sb.AppendLine($"public override {destTypeName} Project({sourceTypeName} source)");
             Indent(); _sb.AppendLine("{");
             _indentationLevel++;
             GenerateNullCheck("source", destTypeName);
@@ -124,13 +124,14 @@ namespace ProjectR
         {
             var sourceTypeName = plan.SourceType.ToDisplayString();
             var destTypeName = plan.DestinationType.ToDisplayString();
-            BuildXmlDoc(mapperSymbol, "ApplyTo");
-            Indent(); _sb.AppendLine($"public override void ApplyTo({sourceTypeName} source, {destTypeName} destination)");
+            BuildXmlDoc(mapperSymbol, "Apply");
+            Indent(); _sb.AppendLine($"public override void Apply({sourceTypeName} source, {destTypeName} destination)");
             Indent(); _sb.AppendLine("{");
             _indentationLevel++;
             Indent(); _sb.AppendLine("if (source is null || destination is null) return;");
             _sb.AppendLine();
             GenerateMappingInstructions("source", "destination", plan, isApplyTo: true);
+            Indent(); _sb.AppendLine("ApplyToRefiner(destination, source);");
             _indentationLevel--;
             Indent(); _sb.AppendLine("}");
         }
@@ -169,7 +170,9 @@ namespace ProjectR
                     _sb.AppendLine($"new {variableType.ToDisplayString()}()");
                     break;
             }
-            _sb.Append($", {sourceVarName});");
+            Indent(); _sb.Append($", {sourceVarName});");
+            _indentationLevel--;
+            _sb.AppendLine();
 
         }
 
@@ -260,12 +263,12 @@ namespace ProjectR
 
         private string GetNestedMethodName(ITypeSymbol? sourceType, ITypeSymbol? destinationType, bool isApplyTo)
         {
-            if (sourceType == null || destinationType == null) return "ProjectAs";
+            if (sourceType == null || destinationType == null) return "Project";
             bool sourceIsDto = sourceType.Name.EndsWith("Dto"), destIsDto = destinationType.Name.EndsWith("Dto");
-            if (isApplyTo) return "ApplyTo";
-            if (!sourceIsDto && destIsDto) return "ProjectAs";
+            if (isApplyTo) return "Apply";
+            if (!sourceIsDto && destIsDto) return "Project";
             if (sourceIsDto && !destIsDto) return "Build";
-            return "ProjectAs";
+            return "Project";
         }
 
         private ITypeSymbol? GetCollectionElementType(ITypeSymbol type)

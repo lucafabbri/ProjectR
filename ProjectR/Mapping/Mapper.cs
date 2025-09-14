@@ -4,59 +4,68 @@
     /// The core abstract class that developers will inherit from to define a mapper.
     /// Inheriting from this class is the trigger for the Source Generator.
     /// </summary>
-    /// <typeparam name="TSource">The source type (e.g., the Domain Entity).</typeparam>
-    /// <typeparam name="TDestination">The destination type (e.g., the DTO).</typeparam>
-    public abstract partial class Mapper<TSource, TDestination>
+    /// <typeparam name="TEntity">The entity type (e.g., the Domain Entity).</typeparam>
+    /// <typeparam name="TDto">The dto type (e.g., the DTO).</typeparam>
+    public abstract partial class Mapper<TEntity, TDto>
     {
         /// <summary>
-        /// Projects a source object into a new destination object.
+        /// Projects a entity object into a new dto object.
         /// This implementation will be generated automatically.
         /// </summary>
-        /// <param name="source">The source object instance.</param>
-        /// <returns>A new destination object instance.</returns>
-        public abstract TDestination ProjectAs(TSource source);
+        /// <param name="source">The entity object instance.</param>
+        /// <returns>A new dto object instance.</returns>
+        public abstract TDto Project(TEntity source);
 
         /// <summary>
-        /// Builds a new source object from a destination object.
+        /// Builds a new entity object from a dto object.
         /// This implementation will be generated automatically based on creation policies.
         /// </summary>
-        /// <param name="destination">The destination object instance.</param>
-        /// <returns>A new source object instance.</returns>
-        public abstract TSource Build(TDestination destination);
+        /// <param name="dto">The dto object instance.</param>
+        /// <returns>A new entity object instance.</returns>
+        public abstract TEntity Build(TDto dto);
 
         /// <summary>
-        /// Applies the data from a destination object to an existing source object.
+        /// Applies the data from a dto object to an existing entity object.
         /// This implementation will be generated automatically based on modification policies.
         /// </summary>
-        /// <param name="destination">The destination object containing the new data.</param>
-        /// <param name="sourceToUpdate">The existing source object to update.</param>
-        public abstract void ApplyTo(TDestination destination, TSource sourceToUpdate);
+        /// <param name="dto">The dto object containing the new data.</param>
+        /// <param name="entityToUpdate">The existing entity object to update.</param>
+        public abstract void Apply(TDto dto, TEntity entityToUpdate);
 
         /// <summary>
-        /// A factory method used by the source generator to create a new source object.
+        /// A factory method used by the entity generator to create a new entity object.
         /// This method can be overridden to provide a custom creation logic.
         /// </summary>
-        /// <param name="destination">The destination object instance.</param>
-        /// <returns>A new source object instance.</returns>
-        public static TSource BuildFactoryFallback(TDestination destination) => default!;
+        /// <param name="dto">The dto object instance.</param>
+        /// <returns>A new entity object instance.</returns>
+        public static TEntity BuildFactoryFallback(TDto dto) => default!;
 
         /// <summary>
-        /// A refinement method used by the source generator to apply final adjustments to the source object after building.
+        /// A refinement method used by the entity generator to apply final adjustments to the entity object after building.
         /// This method can be overridden to provide custom refinement logic.
         /// </summary>
-        /// <param name="source">The source object instance created by the build process.</param>
-        /// <param name="destination">The destination object instance.</param>
-        /// <returns>The refined source object instance.</returns>
-        public virtual TSource BuildRefiner(TSource source, TDestination destination) => source;
+        /// <param name="entity">The entity object instance created by the build process.</param>
+        /// <param name="dto">The dto object instance.</param>
+        /// <returns>The refined entity object instance.</returns>
+        public virtual TEntity BuildRefiner(TEntity entity, TDto dto) => entity;
 
         /// <summary>
-        /// A refinement method used by the source generator to apply final adjustments to the destination object after projection.
+        /// A refinement method used by the entity generator to apply final adjustments to the dto object after projection.
         /// This method can be overridden to provide custom refinement logic.
         /// </summary>
-        /// <param name="destination">The destination object instance created by the projection process.</param>
-        /// <param name="source">The source object instance.</param>
-        /// <returns>The refined destination object instance.</returns>
-        public virtual TDestination ProjectAsRefiner(TDestination destination, TSource source) => destination;
+        /// <param name="dto">The dto object instance created by the projection process.</param>
+        /// <param name="entity">The entity object instance.</param>
+        /// <returns>The refined dto object instance.</returns>
+        public virtual TDto ProjectAsRefiner(TDto dto, TEntity entity) => dto;
+
+        /// <summary>
+        /// A refinement method used by the entity generator to apply final adjustments to the entity object after applying updates from a dto.
+        /// This method can be overridden to provide custom refinement logic.
+        /// </summary>
+        /// <param name="entity">The entity object instance created by the build process.</param>
+        /// <param name="dto">The dto object instance.</param>
+        /// <returns>The refined entity object instance.</returns>
+        public virtual void ApplyToRefiner(TEntity entity, TDto dto) { }
     }
 
     /// <summary>
@@ -65,35 +74,35 @@
     public static class MapperExtensions
     {
         /// <summary>
-        /// Applies the data from a destination object to an existing source object using the specified mapper.
-        /// This is a generic extension method that simplifies the process of updating a source entity from a DTO.
+        /// Applies the data from a dto object to an existing entity object using the specified mapper.
+        /// This is a generic extension method that simplifies the process of updating a entity entity from a DTO.
         /// </summary>
-        /// <typeparam name="TDestination">The destination type (e.g., the DTO).</typeparam>
-        /// <typeparam name="TSource">The source type (e.g., the Domain Entity).</typeparam>
+        /// <typeparam name="TDto">The dto type (e.g., the DTO).</typeparam>
+        /// <typeparam name="TEntity">The entity type (e.g., the Domain Entity).</typeparam>
         /// <typeparam name="TMapper">The specific mapper class inheriting from <see cref="Mapper{TSource, TDestination}"/>.</typeparam>
-        /// <param name="destination">The destination object containing the new data.</param>
-        /// <param name="sourceToUpdate">The existing source object to update.</param>
-        /// <returns>The updated source object instance.</returns>
-        public static TSource ApplyTo<TDestination, TSource, TMapper>(this TDestination destination, TSource sourceToUpdate)
-            where TMapper : Mapper<TSource, TDestination>, new()
+        /// <param name="dto">The dto object containing the new data.</param>
+        /// <param name="entityToUpdate">The existing entity object to update.</param>
+        /// <returns>The updated entity object instance.</returns>
+        public static TEntity Apply<TDto, TEntity, TMapper>(this TDto dto, TEntity entityToUpdate)
+            where TMapper : Mapper<TEntity, TDto>, new()
         {
-            Mapper<TSource, TDestination> mapper = Activator.CreateInstance<TMapper>();
-            mapper.ApplyTo(destination, sourceToUpdate);
-            return sourceToUpdate;
+            Mapper<TEntity, TDto> mapper = Activator.CreateInstance<TMapper>();
+            mapper.Apply(dto, entityToUpdate);
+            return entityToUpdate;
         }
 
-        public static TDestination ProjectAs<TDestination, TSource, TMapper>(this TSource source)
-            where TMapper : Mapper<TSource, TDestination>, new()
+        public static TDto Project<TDto, TEntity, TMapper>(this TEntity entity)
+            where TMapper : Mapper<TEntity, TDto>, new()
         {
-            Mapper<TSource, TDestination> mapper = Activator.CreateInstance<TMapper>();
-            return mapper.ProjectAs(source);
+            Mapper<TEntity, TDto> mapper = Activator.CreateInstance<TMapper>();
+            return mapper.Project(entity);
         }
 
-        public static TSource Build<TDestination, TSource, TMapper>(this TDestination destination)
-            where TMapper : Mapper<TSource, TDestination>, new()
+        public static TEntity Build<TDto, TEntity, TMapper>(this TDto dto)
+            where TMapper : Mapper<TEntity, TDto>, new()
         {
-            Mapper<TSource, TDestination> mapper = Activator.CreateInstance<TMapper>();
-            return mapper.Build(destination);
+            Mapper<TEntity, TDto> mapper = Activator.CreateInstance<TMapper>();
+            return mapper.Build(dto);
         }
     }
 }

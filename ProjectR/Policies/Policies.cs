@@ -14,17 +14,17 @@ namespace ProjectR
     public interface IPolicyConfiguration
     {
         /// <summary>
-        /// Configures the policy for the ProjectAs(TSource) method.
+        /// Configures the policy for the Project(TEntity) method.
         /// </summary>
         IProjectAsPolicyBuilder<TSource, TDestination> ForProjection<TSource, TDestination>();
 
         /// <summary>
-        /// Configures the policy for the Build(TDestination) method.
+        /// Configures the policy for the Build(TDto) method.
         /// </summary>
         IBuildPolicyBuilder<TDestination, TSource> ForCreation<TDestination, TSource>();
 
         /// <summary>
-        /// Configures the policy for the ApplyTo(TDestination, TSource) method.
+        /// Configures the policy for the Apply(TDto, TEntity) method.
         /// </summary>
         IApplyToPolicyBuilder<TDestination, TSource> ForModification<TDestination, TSource>();
     }

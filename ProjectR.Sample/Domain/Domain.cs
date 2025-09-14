@@ -28,7 +28,7 @@ namespace ProjectR.Sample.Domain
     public class Product
     {
         public Guid Id { get; private set; }
-        public string Name { get; private set; }
+        public string Name { get; set; }
         public Money Price { get; private set; }
         private readonly List<Review> _reviews = new();
         public IReadOnlyList<Review> Reviews => _reviews.ToList();
@@ -59,11 +59,11 @@ namespace ProjectR.Sample.Domain
         /// <summary>
         /// A domain method to update the product's name.
         /// </summary>
-        public void ChangeName(string newName)
+        public void ChangeName(string name)
         {
-            if (!string.IsNullOrWhiteSpace(newName))
+            if (!string.IsNullOrWhiteSpace(name))
             {
-                Name = newName;
+                Name = name;
             }
         }
 
