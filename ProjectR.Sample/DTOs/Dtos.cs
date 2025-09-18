@@ -45,4 +45,15 @@ namespace ProjectR.Sample.Application.DTOs
     {
         public string Name { get; set; }
     }
+
+    public abstract class BaseEntityDto
+    {
+        public Guid Id { get; set; }
+    }
+
+    [Dto<Category>]
+    public class CategoryDto : BaseEntityDto
+    {
+        public string Name { get; set; }
+    }
 }

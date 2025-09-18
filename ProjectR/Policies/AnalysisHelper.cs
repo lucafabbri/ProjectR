@@ -32,6 +32,18 @@ namespace ProjectR
             }
 
             var allConstructors = destinationType.GetMembers().OfType<IMethodSymbol>().Where(m => m.MethodKind == MethodKind.Constructor && m.DeclaredAccessibility == Accessibility.Public).ToList();
+
+            if (!allConstructors.Any())
+            {
+                var destinationBaseType = destinationType.BaseType;
+                while (destinationBaseType != null)
+                {
+                    allConstructors = allConstructors.Concat(destinationBaseType.GetMembers().OfType<IMethodSymbol>().Where(m => m.MethodKind == MethodKind.Constructor && m.DeclaredAccessibility == Accessibility.Public)).ToList();
+                    if (allConstructors.Any()) break;
+                    destinationBaseType = destinationBaseType.BaseType;
+                }
+            }
+
             if (!allConstructors.Any())
             {
                 plan.Creation.Method = CreationMethod.None;
@@ -50,6 +62,18 @@ namespace ProjectR
         public void FindBestFactory(ITypeSymbol sourceType, ITypeSymbol destinationType, MappingPlan plan)
         {
             var factories = destinationType.GetMembers().OfType<IMethodSymbol>().Where(m => m.IsStatic && m.DeclaredAccessibility == Accessibility.Public && SymbolEqualityComparer.Default.Equals(m.ReturnType, destinationType));
+
+            if (!factories.Any())
+            {
+                var destinationBaseType = destinationType.BaseType;
+                while (destinationType != null)
+                {
+                    factories = factories.Concat(destinationType.GetMembers().OfType<IMethodSymbol>().Where(m => m.IsStatic && m.DeclaredAccessibility == Accessibility.Public && SymbolEqualityComparer.Default.Equals(m.ReturnType, destinationType)));
+                    if (factories.Any()) break;
+                    destinationType = destinationType.BaseType;
+                }
+            }
+
             FindBestCandidate(factories, sourceType, plan, isFactory: true);
         }
 
@@ -68,8 +92,20 @@ namespace ProjectR
         public void MapRemainingProperties(ITypeSymbol sourceType, ITypeSymbol destinationType, MappingPlan plan, IEnumerable<string>? ignoredMembers)
         {
             var sourceProperties = sourceType.GetMembers().OfType<IPropertySymbol>().ToList();
+            var sourceBaseType = sourceType.BaseType;
+            while (sourceBaseType != null)
+            {
+                sourceProperties.AddRange(sourceBaseType.GetMembers().OfType<IPropertySymbol>());
+                sourceBaseType = sourceBaseType.BaseType;
+            }
             var alreadyMapped = new HashSet<string>(plan.Creation.ParametersMap.Values.Select(p => p.SourceProperty.Name).Concat(plan.Instructions.Select(i => i.Destination.Name)));
             var destinationProperties = destinationType.GetMembers().OfType<IPropertySymbol>().Where(p => !alreadyMapped.Contains(p.Name));
+            var destinationBaseType = destinationType.BaseType;
+            while (destinationBaseType != null)
+            {
+                destinationProperties = destinationProperties.Concat(destinationBaseType.GetMembers().OfType<IPropertySymbol>().Where(p => !alreadyMapped.Contains(p.Name)));
+                destinationBaseType = destinationBaseType.BaseType;
+            }
 
             var ignoredSet = ignoredMembers != null ? new HashSet<string>(ignoredMembers, System.StringComparer.OrdinalIgnoreCase) : new HashSet<string>();
             destinationProperties = destinationProperties.Where(p => !ignoredSet.Contains(p.Name));
@@ -115,6 +151,12 @@ namespace ProjectR
         private bool CanSatisfyParameters(IMethodSymbol method, ITypeSymbol sourceType, MappingPlan plan)
         {
             var sourceProperties = sourceType.GetMembers().OfType<IPropertySymbol>().ToList();
+            var sourceBaseType = sourceType.BaseType;
+            while (sourceBaseType != null)
+            {
+                sourceProperties.AddRange(sourceBaseType.GetMembers().OfType<IPropertySymbol>());
+                sourceBaseType = sourceBaseType.BaseType;
+            }
             return method.Parameters.All(p =>
             {
                 if (p.IsOptional || p.NullableAnnotation == NullableAnnotation.Annotated || p.Type.OriginalDefinition.SpecialType == SpecialType.System_Nullable_T) return true;
@@ -130,6 +172,12 @@ namespace ProjectR
         private Dictionary<IParameterSymbol, CreationInfo.ParameterMappingInfo> MapMethodParameters(IMethodSymbol method, ITypeSymbol sourceType, MappingPlan plan)
         {
             var sourceProperties = sourceType.GetMembers().OfType<IPropertySymbol>().ToList();
+            var sourceBaseType = sourceType.BaseType;
+            while (sourceBaseType != null)
+            {
+                sourceProperties.AddRange(sourceBaseType.GetMembers().OfType<IPropertySymbol>());
+                sourceBaseType = sourceBaseType.BaseType;
+            }
             var map = new Dictionary<IParameterSymbol, CreationInfo.ParameterMappingInfo>(SymbolEqualityComparer.Default);
             foreach (var param in method.Parameters)
             {
@@ -151,8 +199,33 @@ namespace ProjectR
         private IMethodSymbol? FindRecordPrimaryConstructor(ITypeSymbol recordType)
         {
             var recordProperties = recordType.GetMembers().OfType<IPropertySymbol>().Where(p => !p.IsStatic).ToDictionary(p => p.Name, System.StringComparer.OrdinalIgnoreCase);
+            var baseRecordType = recordType.BaseType;
+            while (baseRecordType != null && baseRecordType.IsRecord)
+            {
+                foreach (var prop in baseRecordType.GetMembers().OfType<IPropertySymbol>().Where(p => !p.IsStatic))
+                {
+                    if (!recordProperties.ContainsKey(prop.Name))
+                    {
+                        recordProperties[prop.Name] = prop;
+                    }
+                }
+                baseRecordType = baseRecordType.BaseType;
+            }
             if (!recordProperties.Any()) return null;
-            return recordType.GetMembers().OfType<IMethodSymbol>().FirstOrDefault(m => m.MethodKind == MethodKind.Constructor);
+            
+            var result = recordType.GetMembers().OfType<IMethodSymbol>().FirstOrDefault(m => m.MethodKind == MethodKind.Constructor);
+
+            if(result == null)
+            {
+                baseRecordType = recordType.BaseType;
+                while (baseRecordType != null && baseRecordType.IsRecord)
+                {
+                    result = baseRecordType.GetMembers().OfType<IMethodSymbol>().FirstOrDefault(m => m.MethodKind == MethodKind.Constructor);
+                    if (result != null) break;
+                    baseRecordType = baseRecordType.BaseType;
+                }
+            }
+            return result;
         }
 
         private INamedTypeSymbol? FindMapperFor(ITypeSymbol sourceType, ITypeSymbol destinationType)

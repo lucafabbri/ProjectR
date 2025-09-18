@@ -4,6 +4,22 @@ using System.Linq;
 
 namespace ProjectR.Sample.Domain
 {
+    public abstract class BaseEntity
+    {
+        public Guid Id { get; set; }
+    }
+
+    public class Category : BaseEntity
+    {
+        public string Name { get; set; }
+
+        public Category(Guid id, string name)
+        {
+            Id = id;
+            Name = name;
+        }
+    }
+
     /// <summary>
     /// A simple Value Object representing a monetary value.
     /// It's immutable.

@@ -59,18 +59,30 @@ namespace ProjectR
         private MappingPlan BuildPlanFromPolicy(ITypeSymbol sourceType, ITypeSymbol destinationType, ParsedPolicy policy, bool isApplyTo = false, bool isProjectAs = false)
         {
             var plan = new MappingPlan(sourceType, destinationType);
-            var destinationProperties = destinationType.GetMembers().OfType<IPropertySymbol>().ToDictionary(p => p.Name);
+            //var destinationProperties = destinationType.GetMembers().OfType<IPropertySymbol>().ToDictionary(p => p.Name);
 
-            plan.Creation.CustomParameterExpressions = policy.ParameterMappings;
+            //var destinationBaseType = destinationType.BaseType;
 
-            // Apply custom member mappings from policy.MemberMappings
-            foreach (var memberConfig in policy.MemberMappings)
-            {
-                if (destinationProperties.TryGetValue(memberConfig.Key, out var destProp))
-                {
-                    plan.Instructions.Add(new CustomExpressionMapping(memberConfig.Value, destProp));
-                }
-            }
+            //while(destinationBaseType != null)
+            //{
+            //    foreach(var baseProp in destinationBaseType.GetMembers().OfType<IPropertySymbol>())
+            //    {
+            //        if(!destinationProperties.ContainsKey(baseProp.Name))
+            //            destinationProperties[baseProp.Name] = baseProp;
+            //    }
+            //    destinationBaseType = destinationBaseType.BaseType;
+            //}
+
+            //plan.Creation.CustomParameterExpressions = policy.ParameterMappings;
+
+            //// Apply custom member mappings from policy.MemberMappings
+            //foreach (var memberConfig in policy.MemberMappings)
+            //{
+            //    if (destinationProperties.TryGetValue(memberConfig.Key, out var destProp))
+            //    {
+            //        plan.Instructions.Add(new CustomExpressionMapping(memberConfig.Value, destProp));
+            //    }
+            //}
 
             var strategies = policy.Strategies.Any() ? policy.Strategies : CreateDefaultBuildPolicy().Strategies;
 
