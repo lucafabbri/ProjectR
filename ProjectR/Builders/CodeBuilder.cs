@@ -241,8 +241,11 @@ namespace ProjectR
                         assignment = $"{nested.Destination.Name} = this._{GetFieldName(nested.Mapper)}.{nestedMethod}({sourceVar}.{nested.Source.Name})";
                         break;
                     case CollectionPropertyMapping collection:
-                        var elementMethod = GetNestedMethodName(GetCollectionElementType(collection.Source.Type), GetCollectionElementType(collection.Destination.Type), isApplyTo);
-                        assignment = $"{collection.Destination.Name} = {sourceVar}.{collection.Source.Name}?.Select(x => this._{GetFieldName(collection.ElementMapper)}.{elementMethod}(x)).ToList()";
+                        if (!isApplyTo)
+                        {
+                            var elementMethod = GetNestedMethodName(GetCollectionElementType(collection.Source.Type), GetCollectionElementType(collection.Destination.Type), isApplyTo);
+                            assignment = $"{collection.Destination.Name} = {sourceVar}.{collection.Source.Name}?.Select(x => this._{GetFieldName(collection.ElementMapper)}.{elementMethod}(x)).ToList()";
+                        }
                         break;
                 }
                 if (!string.IsNullOrEmpty(assignment))

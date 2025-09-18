@@ -4,12 +4,12 @@ using System.Linq;
 
 namespace ProjectR.Sample.Domain
 {
-    public abstract class BaseEntity
+    public abstract class BaseEntity<TId>
     {
-        public Guid Id { get; set; }
+        public TId Id { get; set; }
     }
 
-    public class Category : BaseEntity
+    public class Category : BaseEntity<Guid>
     {
         public string Name { get; set; }
 
