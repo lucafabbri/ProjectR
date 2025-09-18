@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [versionize](https://github.com/versionize/versionize) for commit guidelines.
 
+<a name="0.3.0"></a>
+## [0.3.0](https://www.github.com/lucafabbri/ProjectR/releases/tag/v0.3.0) (2025-09-18)
+
+### Features
+
+* adds iteration over base type properties ([16613ef](https://www.github.com/lucafabbri/ProjectR/commit/16613efb2d00c5960f7bd14eac3235d5f5ae91fd))
+
 <a name="0.2.2"></a>
 ## [0.2.2](https://www.github.com/lucafabbri/ProjectR/releases/tag/v0.2.2) (2025-09-17)
 
