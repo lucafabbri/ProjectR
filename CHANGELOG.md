@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [versionize](https://github.com/versionize/versionize) for commit guidelines.
 
+<a name="0.3.1"></a>
+## [0.3.1](https://www.github.com/lucafabbri/ProjectR/releases/tag/v0.3.1) (2025-09-18)
+
+### Bug Fixes
+
+* removes support to collection in apply to ([7210ccb](https://www.github.com/lucafabbri/ProjectR/commit/7210ccbe0a8e3e265b67e8376cb6f37d673622d5))
+
 <a name="0.3.0"></a>
 ## [0.3.0](https://www.github.com/lucafabbri/ProjectR/releases/tag/v0.3.0) (2025-09-18)
 
