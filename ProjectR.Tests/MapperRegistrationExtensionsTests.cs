@@ -18,14 +18,12 @@ public class MapperRegistrationExtensionsTests
     {
         public override TestDto Project(TestEntity source) => new TestDto();
         public override TestEntity Build(TestDto dto) => new TestEntity();
-        public override void Apply(TestDto dto, TestEntity entityToUpdate) { }
     }
 
     private class TestMapper2 : Mapper<TestEntity2, TestDto2>
     {
         public override TestDto2 Project(TestEntity2 source) => new TestDto2();
         public override TestEntity2 Build(TestDto2 dto) => new TestEntity2();
-        public override void Apply(TestDto2 dto, TestEntity2 entityToUpdate) { }
     }
 
     private abstract class AbstractMapper : Mapper<TestEntity, TestDto>

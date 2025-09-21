@@ -17,7 +17,6 @@ public class MapperResolverTests
     {
         public override TestDto Project(TestEntity source) => new TestDto();
         public override TestEntity Build(TestDto dto) => new TestEntity();
-        public override void Apply(TestDto dto, TestEntity entityToUpdate) { }
     }
 
     [Fact]

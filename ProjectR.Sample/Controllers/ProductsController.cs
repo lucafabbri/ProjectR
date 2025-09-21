@@ -32,7 +32,7 @@ namespace ProjectR.Sample.Api.Controllers
             }
 
             var mapper = _mapperResolver.GetMapper<Product, ProductDto>();
-            var productDto = product.Project<ProductDto, Product, ProductDtoMapper>();
+            var productDto = mapper.Project(product);
             return Ok(productDto);
         }
 
@@ -46,23 +46,6 @@ namespace ProjectR.Sample.Api.Controllers
             _products.Add(newProduct);
 
             return CreatedAtAction(nameof(GetById), new { id = newProduct.Id }, _mapperResolver.GetMapper<Product, ProductDto>().Project(newProduct));
-        }
-
-        [HttpPut("{id}")]
-        public IActionResult UpdateProduct(Guid id, [FromBody] UpdateProductDto updateDto)
-        {
-            var productToUpdate = _products.Find(p => p.Id == id);
-            if (productToUpdate == null)
-            {
-                return NotFound();
-            }
-
-            _mapperResolver.GetMapper<Product, UpdateProductDto>().Apply(updateDto, productToUpdate);
-
-            _products.RemoveAll(p => p.Id == id);
-            _products.Add(productToUpdate);
-
-            return NoContent();
         }
     }
 }

@@ -22,7 +22,6 @@ namespace ProjectR
             }
             BuildProjectAsMethod(mapperSymbol, projectAsPlan);
             BuildBuildMethod(mapperSymbol, buildPlan);
-            BuildApplyToMethod(mapperSymbol, applyToPlan);
             BuildFooter();
             return _sb.ToString();
         }
@@ -120,22 +119,6 @@ namespace ProjectR
             _sb.AppendLine();
         }
 
-        private void BuildApplyToMethod(INamedTypeSymbol mapperSymbol, MappingPlan plan)
-        {
-            var sourceTypeName = plan.SourceType.ToDisplayString();
-            var destTypeName = plan.DestinationType.ToDisplayString();
-            BuildXmlDoc(mapperSymbol, "Apply");
-            Indent(); _sb.AppendLine($"public override void Apply({sourceTypeName} source, {destTypeName} destination)");
-            Indent(); _sb.AppendLine("{");
-            _indentationLevel++;
-            Indent(); _sb.AppendLine("if (source is null || destination is null) return;");
-            _sb.AppendLine();
-            GenerateMappingInstructions("source", "destination", plan, isApplyTo: true);
-            Indent(); _sb.AppendLine("ApplyToRefiner(destination, source);");
-            _indentationLevel--;
-            Indent(); _sb.AppendLine("}");
-        }
-
         private void GenerateCreationBlock(string variableName, ITypeSymbol variableType, MappingPlan plan, string sourceVarName, bool isBuild = false)
         {
             Indent(); 
@@ -158,7 +141,7 @@ namespace ProjectR
                     _sb.AppendLine($"new {variableType.ToDisplayString()}");
                     Indent(); _sb.AppendLine("{");
                     _indentationLevel++;
-                    GenerateMappingInstructions(sourceVarName, null, plan, isApplyTo: false);
+                    GenerateMappingInstructions(sourceVarName, null, plan);
                     _indentationLevel--;
                     Indent(); _sb.AppendLine("}");
                     break;
@@ -201,7 +184,7 @@ namespace ProjectR
             return string.Join(", ", args);
         }
 
-        private void GenerateMappingInstructions(string sourceVar, string? destVar, MappingPlan plan, bool isApplyTo)
+        private void GenerateMappingInstructions(string sourceVar, string? destVar, MappingPlan plan)
         {
             foreach (var instruction in plan.Instructions)
             {
@@ -231,21 +214,12 @@ namespace ProjectR
                         assignment = $"{composite.Destination.Name} = string.Format(\"{composite.Format}\", {sourceProps})";
                         break;
                     case NestedPropertyMapping nested:
-                        var nestedMethod = GetNestedMethodName(nested.Source.Type, nested.Destination.Type, isApplyTo);
-                        if (isApplyTo)
-                        {
-                            Indent();
-                            _sb.AppendLine($"this._{GetFieldName(nested.Mapper)}.{nestedMethod}({sourceVar}.{nested.Source.Name}, {destVar}.{nested.Destination.Name});");
-                            continue;
-                        }
+                        var nestedMethod = GetNestedMethodName(nested.Source.Type, nested.Destination.Type);
                         assignment = $"{nested.Destination.Name} = this._{GetFieldName(nested.Mapper)}.{nestedMethod}({sourceVar}.{nested.Source.Name})";
                         break;
                     case CollectionPropertyMapping collection:
-                        if (!isApplyTo)
-                        {
-                            var elementMethod = GetNestedMethodName(GetCollectionElementType(collection.Source.Type), GetCollectionElementType(collection.Destination.Type), isApplyTo);
-                            assignment = $"{collection.Destination.Name} = {sourceVar}.{collection.Source.Name}?.Select(x => this._{GetFieldName(collection.ElementMapper)}.{elementMethod}(x)).ToList()";
-                        }
+                        var elementMethod = GetNestedMethodName(GetCollectionElementType(collection.Source.Type), GetCollectionElementType(collection.Destination.Type));
+                        assignment = $"{collection.Destination.Name} = {sourceVar}.{collection.Source.Name}?.Select(x => this._{GetFieldName(collection.ElementMapper)}.{elementMethod}(x)).ToList()";
                         break;
                 }
                 if (!string.IsNullOrEmpty(assignment))
@@ -264,11 +238,10 @@ namespace ProjectR
             return "";
         }
 
-        private string GetNestedMethodName(ITypeSymbol? sourceType, ITypeSymbol? destinationType, bool isApplyTo)
+        private string GetNestedMethodName(ITypeSymbol? sourceType, ITypeSymbol? destinationType)
         {
             if (sourceType == null || destinationType == null) return "Project";
             bool sourceIsDto = sourceType.Name.EndsWith("Dto"), destIsDto = destinationType.Name.EndsWith("Dto");
-            if (isApplyTo) return "Apply";
             if (!sourceIsDto && destIsDto) return "Project";
             if (sourceIsDto && !destIsDto) return "Build";
             return "Project";
