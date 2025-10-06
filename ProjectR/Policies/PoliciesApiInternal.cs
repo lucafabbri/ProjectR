@@ -15,14 +15,14 @@ namespace ProjectR
             return new ProjectAsPolicyBuilder<TSource, TDestination>();
         }
 
-        public IBuildPolicyBuilder<TDestination, TSource> ForCreation<TDestination, TSource>()
+        public IBuildPolicyBuilder<TSource, TDestination> ForCreation<TSource, TDestination>()
         {
-            return new BuildPolicyBuilder<TDestination, TSource>();
+            return new BuildPolicyBuilder<TSource, TDestination>();
         }
 
-        public IApplyToPolicyBuilder<TDestination, TSource> ForModification<TDestination, TSource>()
+        public IApplyToPolicyBuilder<TSource, TDestination> ForModification<TSource, TDestination>()
         {
-            return new ApplyToPolicyBuilder<TDestination, TSource>();
+            return new ApplyToPolicyBuilder<TSource, TDestination>();
         }
     }
 

@@ -21,12 +21,12 @@ namespace ProjectR
         /// <summary>
         /// Configures the policy for the Build(TDto) method.
         /// </summary>
-        IBuildPolicyBuilder<TDestination, TSource> ForCreation<TDestination, TSource>();
+        IBuildPolicyBuilder<TSource, TDestination> ForCreation<TSource, TDestination>();
 
         /// <summary>
         /// Configures the policy for the Apply(TDto, TEntity) method.
         /// </summary>
-        IApplyToPolicyBuilder<TDestination, TSource> ForModification<TDestination, TSource>();
+        IApplyToPolicyBuilder<TSource, TDestination> ForModification<TSource, TDestination>();
     }
 
     // NUOVA INTERFACCIA DI BASE PER LE CONFIGURAZIONI A LIVELLO DI PROPRIETÀ
