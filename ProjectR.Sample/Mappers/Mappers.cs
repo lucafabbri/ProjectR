@@ -1,11 +1,22 @@
 ﻿using ProjectR;
 using ProjectR.Sample.Domain;
 using ProjectR.Sample.Application.DTOs;
+using ProjectR.Attributes;
 
 namespace ProjectR.Sample.Application.Mappers
 {
-    public partial class UpdateProductMapper : Mapper<Product, UpdateProductDto> { 
+    [GeneratorExclude]
+    public partial class UpdateProductMapper : Mapper<Product, UpdateProductDto>
+    {
+        public override Product Build(UpdateProductDto dto)
+        {
+            throw new NotImplementedException();
+        }
 
+        public override UpdateProductDto Project(Product source)
+        {
+            throw new NotImplementedException();
+        }
     }
 
     /// <summary>

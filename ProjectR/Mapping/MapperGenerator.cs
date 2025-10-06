@@ -33,6 +33,8 @@ namespace ProjectR
 
                     var mapperBaseSymbol = compilation.GetTypeByMetadataName("ProjectR.Mapper`2");
                     var dtoAttributeSymbol = compilation.GetTypeByMetadataName("ProjectR.Attributes.DtoAttribute`1");
+                    var excludeAttributeSymbol = compilation.GetTypeByMetadataName("ProjectR.Attributes.GeneratorExcludeAttribute");
+
 
                     // First pass: Find all explicit mappers and DTOs with attributes
                     foreach (var tree in compilation.SyntaxTrees)
@@ -46,7 +48,14 @@ namespace ProjectR
                             if (mapperBaseSymbol != null && classSymbol.BaseType is { IsGenericType: true } &&
                                 SymbolEqualityComparer.Default.Equals(classSymbol.BaseType.OriginalDefinition, mapperBaseSymbol))
                             {
-                                explicitMappers[classSymbol.Name] = classNode;
+                                bool hasExcludeAttribute = classSymbol.GetAttributes().Any(ad =>
+                                    excludeAttributeSymbol != null &&
+                                    ad.AttributeClass?.Equals(excludeAttributeSymbol, SymbolEqualityComparer.Default) == true);
+
+                                if (!hasExcludeAttribute)
+                                {
+                                    explicitMappers[classSymbol.Name] = classNode;
+                                }
                             }
 
                             // Check for DTO attribute
