@@ -161,13 +161,14 @@ namespace ProjectR
             var baseType = mapperSymbol.BaseType;
             if (baseType == null || baseType.TypeArguments.Length != 2) return;
 
-            var sourceType = baseType.TypeArguments[0];
-            var destinationType = baseType.TypeArguments[1];
+            // Mapper<TEntity, TDto> type arguments
+            var entityType = baseType.TypeArguments[0];  // TEntity
+            var dtoType = baseType.TypeArguments[1];     // TDto
 
             var allUsings = new HashSet<string>();
             CollectUsings(mapperSymbol, allUsings);
-            CollectUsings(sourceType, allUsings);
-            CollectUsings(destinationType, allUsings);
+            CollectUsings(entityType, allUsings);
+            CollectUsings(dtoType, allUsings);
 
             var policyMethodSyntax = mapperSymbol.GetMembers("ConfigureMappingPolicies")
                 .FirstOrDefault(m => m.IsStatic && !m.IsImplicitlyDeclared)?
@@ -176,9 +177,12 @@ namespace ProjectR
             // Use the provided compilation which includes placeholders
             var engine = new PolicyEngine(compilation, policyMethodSyntax, allMappers);
 
-            var projectAsPlan = engine.CreateProjectAsPlan(sourceType, destinationType);
-            var buildPlan = engine.CreateBuildPlan(destinationType, sourceType);
-            var applyToPlan = engine.CreateApplyToPlan(destinationType, sourceType);
+            // Project: Entity -> DTO
+            var projectAsPlan = engine.CreateProjectAsPlan(entityType, dtoType);
+            // Build: DTO -> Entity
+            var buildPlan = engine.CreateBuildPlan(dtoType, entityType);
+            // ApplyTo: DTO -> Entity (modification)
+            var applyToPlan = engine.CreateApplyToPlan(dtoType, entityType);
 
             projectAsPlan.Diagnostics.ForEach(context.ReportDiagnostic);
             buildPlan.Diagnostics.ForEach(context.ReportDiagnostic);

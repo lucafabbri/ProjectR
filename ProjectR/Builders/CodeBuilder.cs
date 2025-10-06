@@ -91,6 +91,8 @@ namespace ProjectR
 
         private void BuildProjectAsMethod(INamedTypeSymbol mapperSymbol, MappingPlan plan)
         {
+            // For Project: plan.SourceType = Entity, plan.DestinationType = DTO
+            // Generates: TDto Project(TEntity source)
             var sourceTypeName = plan.SourceType.ToDisplayString();
             var destTypeName = plan.DestinationType.ToDisplayString();
             BuildXmlDoc(mapperSymbol, "Project");
@@ -106,6 +108,8 @@ namespace ProjectR
 
         private void BuildBuildMethod(INamedTypeSymbol mapperSymbol, MappingPlan plan)
         {
+            // For Build: plan.SourceType = DTO, plan.DestinationType = Entity
+            // Generates: TEntity Build(TDto source)
             var sourceTypeName = plan.SourceType.ToDisplayString();
             var destTypeName = plan.DestinationType.ToDisplayString();
             BuildXmlDoc(mapperSymbol, "Build");
