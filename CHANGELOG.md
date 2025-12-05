@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [versionize](https://github.com/versionize/versionize) for commit guidelines.
 
+<a name="0.4.1"></a>
+## [0.4.1](https://www.github.com/lucafabbri/ProjectR/releases/tag/v0.4.1) (2025-12-05)
+
+### Bug Fixes
+
+* **generator:** resolve factory discovery and code generation logic ([7cf2363](https://www.github.com/lucafabbri/ProjectR/commit/7cf2363c0f9fc4ce240025ba507f307c799eb671))
+
 <a name="0.4.0"></a>
 ## [0.4.0](https://www.github.com/lucafabbri/ProjectR/releases/tag/v0.4.0) (2025-10-06)
 
