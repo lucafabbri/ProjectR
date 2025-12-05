@@ -8,12 +8,12 @@ namespace ProjectR.Sample.Application.Mappers
     [GeneratorExclude]
     public partial class UpdateProductMapper : Mapper<Product, UpdateProductDto>
     {
-        public override Product Build(UpdateProductDto dto)
+        public override Product BuildGenerated(UpdateProductDto dto)
         {
             throw new NotImplementedException();
         }
 
-        public override UpdateProductDto Project(Product source)
+        public override UpdateProductDto ProjectGenerated(Product source)
         {
             throw new NotImplementedException();
         }

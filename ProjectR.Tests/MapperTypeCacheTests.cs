@@ -13,14 +13,14 @@ public class MapperTypeCacheTests
 
     private class TestMapper : Mapper<TestEntity, TestDto>
     {
-        public override TestDto Project(TestEntity source) => new TestDto();
-        public override TestEntity Build(TestDto dto) => new TestEntity();
+        public override TestDto ProjectGenerated(TestEntity source) => new TestDto();
+        public override TestEntity BuildGenerated(TestDto dto) => new TestEntity();
     }
 
     private class TestMapper2 : Mapper<TestEntity2, TestDto2>
     {
-        public override TestDto2 Project(TestEntity2 source) => new TestDto2();
-        public override TestEntity2 Build(TestDto2 dto) => new TestEntity2();
+        public override TestDto2 ProjectGenerated(TestEntity2 source) => new TestDto2();
+        public override TestEntity2 BuildGenerated(TestDto2 dto) => new TestEntity2();
     }
 
     private class NonMapperClass { }

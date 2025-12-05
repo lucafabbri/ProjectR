@@ -15,8 +15,8 @@ public class MapperResolverTests
 
     private class TestMapper : Mapper<TestEntity, TestDto>
     {
-        public override TestDto Project(TestEntity source) => new TestDto();
-        public override TestEntity Build(TestDto dto) => new TestEntity();
+        public override TestDto ProjectGenerated(TestEntity source) => new TestDto();
+        public override TestEntity BuildGenerated(TestDto dto) => new TestEntity();
     }
 
     [Fact]

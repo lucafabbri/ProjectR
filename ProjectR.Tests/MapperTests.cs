@@ -19,7 +19,7 @@ public class MapperTests
 
     private class TestMapper : Mapper<TestEntity, TestDto>
     {
-        public override TestDto Project(TestEntity source)
+        public override TestDto ProjectGenerated(TestEntity source)
         {
             return new TestDto 
             { 
@@ -28,7 +28,7 @@ public class MapperTests
             };
         }
 
-        public override TestEntity Build(TestDto dto)
+        public override TestEntity BuildGenerated(TestDto dto)
         {
             return new TestEntity 
             { 
@@ -40,7 +40,7 @@ public class MapperTests
 
     private class TestMapperWithRefinement : Mapper<TestEntity, TestDto>
     {
-        public override TestDto Project(TestEntity source)
+        public override TestDto ProjectGenerated(TestEntity source)
         {
             return new TestDto 
             { 
@@ -49,7 +49,7 @@ public class MapperTests
             };
         }
 
-        public override TestEntity Build(TestDto dto)
+        public override TestEntity BuildGenerated(TestDto dto)
         {
             return new TestEntity 
             { 
@@ -166,7 +166,7 @@ public class MapperExtensionsTests
 
     private class TestMapper : Mapper<TestEntity, TestDto>
     {
-        public override TestDto Project(TestEntity source)
+        public override TestDto ProjectGenerated(TestEntity source)
         {
             return new TestDto 
             { 
@@ -175,7 +175,7 @@ public class MapperExtensionsTests
             };
         }
 
-        public override TestEntity Build(TestDto dto)
+        public override TestEntity BuildGenerated(TestDto dto)
         {
             return new TestEntity 
             { 

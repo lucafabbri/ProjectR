@@ -14,7 +14,10 @@
         /// </summary>
         /// <param name="source">The entity object instance.</param>
         /// <returns>A new dto object instance.</returns>
-        public abstract TDto Project(TEntity source);
+        public TDto Project(TEntity source)
+        {
+            return ProjectAsRefiner(ProjectGenerated(source), source);
+        }
 
         /// <summary>
         /// Builds a new entity object from a dto object.
@@ -22,7 +25,10 @@
         /// </summary>
         /// <param name="dto">The dto object instance.</param>
         /// <returns>A new entity object instance.</returns>
-        public abstract TEntity Build(TDto dto);
+        public TEntity Build(TDto dto)
+        {
+            return BuildRefiner(BuildGenerated(dto), dto);
+        }
 
         /// <summary>
         /// A factory method used by the entity generator to create a new entity object.
@@ -31,6 +37,22 @@
         /// <param name="dto">The dto object instance.</param>
         /// <returns>A new entity object instance.</returns>
         public static TEntity BuildFactoryFallback(TDto dto) => default!;
+
+        /// <summary>
+        /// Projects the specified entity to a data transfer object (DTO) of type <typeparamref name="TDto"/>.
+        /// </summary>
+        /// <param name="source">The entity instance to project. Cannot be null.</param>
+        /// <returns>A DTO of type <typeparamref name="TDto"/> representing the projected data from the source entity.</returns>
+        public virtual TDto ProjectGenerated(TEntity source) => default!;
+
+        /// <summary>
+        /// Creates a new instance of <typeparamref name="TEntity"/> based on the data provided in the specified
+        /// <typeparamref name="TDto"/> object.
+        /// </summary>
+        /// <param name="dto">The data transfer object containing the information used to construct the <typeparamref name="TEntity"/>
+        /// instance. Cannot be null.</param>
+        /// <returns>A new <typeparamref name="TEntity"/> instance populated with values from <paramref name="dto"/>.</returns>
+        public virtual TEntity BuildGenerated(TDto dto) => default!;
 
         /// <summary>
         /// A refinement method used by the entity generator to apply final adjustments to the entity object after building.

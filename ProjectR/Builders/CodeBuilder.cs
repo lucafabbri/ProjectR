@@ -94,7 +94,7 @@ namespace ProjectR
             var sourceTypeName = plan.SourceType.ToDisplayString();
             var destTypeName = plan.DestinationType.ToDisplayString();
             BuildXmlDoc(mapperSymbol, "Project");
-            Indent(); _sb.AppendLine($"public override {destTypeName} Project({sourceTypeName} source)");
+            Indent(); _sb.AppendLine($"public override {destTypeName} ProjectGenerated({sourceTypeName} source)");
             Indent(); _sb.AppendLine("{");
             _indentationLevel++;
             GenerateNullCheck("source", destTypeName);
@@ -109,7 +109,7 @@ namespace ProjectR
             var sourceTypeName = plan.SourceType.ToDisplayString();
             var destTypeName = plan.DestinationType.ToDisplayString();
             BuildXmlDoc(mapperSymbol, "Build");
-            Indent(); _sb.AppendLine($"public override {destTypeName} Build({sourceTypeName} source)");
+            Indent(); _sb.AppendLine($"public override {destTypeName} BuildGenerated({sourceTypeName} source)");
             Indent(); _sb.AppendLine("{");
             _indentationLevel++;
             GenerateNullCheck("source", destTypeName);
@@ -122,39 +122,34 @@ namespace ProjectR
         private void GenerateCreationBlock(string variableName, ITypeSymbol variableType, MappingPlan plan, string sourceVarName, bool isBuild = false)
         {
             Indent(); 
-            if(isBuild) _sb.AppendLine("return BuildRefiner(");
-            else _sb.AppendLine("return ProjectAsRefiner(");
-            _indentationLevel++;
-            Indent();
 
             switch (plan.Creation.Method)
             {
                 case CreationMethod.ConstructorWithParameters:
                     var constructorArgs = GetMethodArguments(plan.Creation.Constructor, plan.Creation, sourceVarName);
-                    _sb.AppendLine($"new {variableType.ToDisplayString()}({constructorArgs})");
+                    _sb.AppendLine($"return new {variableType.ToDisplayString()}({constructorArgs});");
                     break;
                 case CreationMethod.FactoryMethod:
                     var factoryArgs = GetMethodArguments(plan.Creation.FactoryMethod, plan.Creation, sourceVarName);
-                    _sb.AppendLine($"{variableType.ToDisplayString()}.{plan.Creation.FactoryMethod.Name}({factoryArgs})");
+                    _sb.AppendLine($"return {variableType.ToDisplayString()}.{plan.Creation.FactoryMethod.Name}({factoryArgs});");
                     break;
                 case CreationMethod.ParameterlessConstructor:
-                    _sb.AppendLine($"new {variableType.ToDisplayString()}");
+                    _sb.AppendLine($"return new {variableType.ToDisplayString()}");
                     Indent(); _sb.AppendLine("{");
                     _indentationLevel++;
                     GenerateMappingInstructions(sourceVarName, null, plan);
                     _indentationLevel--;
-                    Indent(); _sb.AppendLine("}");
+                    Indent(); _sb.AppendLine("};");
                     break;
                 default:
                     if (isBuild)
                     {
-                        _sb.AppendLine($"BuildFactoryFallback({variableName})");
+                        _sb.AppendLine($"var fallback = BuildFactoryFallback({sourceVarName});");
+                        _sb.AppendLine("if (fallback != null) return fallback;");
                     }
-                    _sb.AppendLine($"new {variableType.ToDisplayString()}()");
+                    _sb.AppendLine($"return new {variableType.ToDisplayString()}();");
                     break;
             }
-            Indent(); _sb.Append($", {sourceVarName});");
-            _indentationLevel--;
             _sb.AppendLine();
 
         }

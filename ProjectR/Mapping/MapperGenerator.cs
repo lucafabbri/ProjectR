@@ -57,8 +57,7 @@ namespace ProjectR
                                     explicitMappers[classSymbol.Name] = classNode;
                                 }
                             }
-
-                            // Check for DTO attribute
+                            
                             var attribute = classSymbol.GetAttributes().FirstOrDefault(ad =>
                                 dtoAttributeSymbol != null && ad.AttributeClass?.OriginalDefinition.Equals(dtoAttributeSymbol, SymbolEqualityComparer.Default) == true);
 
@@ -72,7 +71,6 @@ namespace ProjectR
 
                     return (compilation, explicitMappers, dtosWithAttribute);
                 });
-
 
             context.RegisterSourceOutput(compilationAndClasses,
                 static (spc, source) => Execute(source.compilation, source.explicitMappers, source.dtosWithAttribute, spc));

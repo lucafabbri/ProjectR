@@ -10,7 +10,7 @@ namespace ProjectR.Sample.Application.DTOs
     public class MoneyDto
     {
         public decimal Amount { get; set; }
-        public string Currency { get; set; }
+        public string Currency { get; set; } 
     }
 
     // A DTO for the Review entity.

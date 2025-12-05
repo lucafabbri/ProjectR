@@ -61,16 +61,20 @@ namespace ProjectR
 
         public void FindBestFactory(ITypeSymbol sourceType, ITypeSymbol destinationType, MappingPlan plan)
         {
-            var factories = destinationType.GetMembers().OfType<IMethodSymbol>().Where(m => m.IsStatic && m.DeclaredAccessibility == Accessibility.Public && SymbolEqualityComparer.Default.Equals(m.ReturnType, destinationType));
+            var targetType = destinationType;
+            var factories = destinationType.GetMembers().OfType<IMethodSymbol>().Where(m => m.IsStatic && m.DeclaredAccessibility == Accessibility.Public && SymbolEqualityComparer.Default.Equals(m.ReturnType, targetType));
 
             if (!factories.Any())
             {
-                var destinationBaseType = destinationType.BaseType;
-                while (destinationType != null)
+                var currentType = destinationType.BaseType;
+                while (currentType != null)
                 {
-                    factories = factories.Concat(destinationType.GetMembers().OfType<IMethodSymbol>().Where(m => m.IsStatic && m.DeclaredAccessibility == Accessibility.Public && SymbolEqualityComparer.Default.Equals(m.ReturnType, destinationType)));
+                    var typeToCheck = currentType;
+                    var extraFactories = currentType.GetMembers().OfType<IMethodSymbol>().Where(m => m.IsStatic && m.DeclaredAccessibility == Accessibility.Public && SymbolEqualityComparer.Default.Equals(m.ReturnType, typeToCheck));
+                    factories = factories.Concat(extraFactories);
+                    
                     if (factories.Any()) break;
-                    destinationType = destinationType.BaseType;
+                    currentType = currentType.BaseType;
                 }
             }
 
