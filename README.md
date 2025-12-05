@@ -48,7 +48,7 @@ The core of ProjectR is a Roslyn Source Generator that activates during compilat
 
    * If it finds a static method named `ConfigureMappingPolicies(IPolicyConfiguration config)`, it parses the user-defined rules and applies them to override the default behavior.
 
-4. **Code Generation**: It generates a `partial class` implementation in a `.g.cs` file containing the `ProjectAs`, `Build`, and `ApplyTo` methods. This generated code is then compiled along with the rest of your project.
+4. **Code Generation**: It generates a `partial class` implementation in a `.g.cs` file containing the `ProjectGenerated` and `BuildGenerated` methods. The public `Project` and `Build` methods in your base class then call these generated implementations. This generated code is compiled along with the rest of your project.
 
 ## 🚀 Getting Started: Example
 
