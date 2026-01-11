@@ -11,7 +11,7 @@
 
     <!-- NuGet Metadata -->
     <PackageId>ProjectR</PackageId>
-    <Version>0.4.2</Version>
+    <Version>0.4.3</Version>
     <Authors>Luca Fabbri</Authors>
     <Description>
       ProjectR: Unopinionated object mapping. No black magic. Just your rules, transparently automated.

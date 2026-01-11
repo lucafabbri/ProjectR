@@ -2,6 +2,9 @@
 
 All notable changes to this project will be documented in this file. See [versionize](https://github.com/versionize/versionize) for commit guidelines.
 
+<a name="0.4.3"></a>
+## [0.4.3](https://www.github.com/lucafabbri/ProjectR/releases/tag/v0.4.3) (2026-01-11)
+
 <a name="0.4.2"></a>
 ## [0.4.2](https://www.github.com/lucafabbri/ProjectR/releases/tag/v0.4.2) (2025-12-05)
 
