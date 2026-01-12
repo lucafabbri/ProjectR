@@ -101,7 +101,8 @@ namespace ProjectR
     public partial class {mapperName} : global::ProjectR.Mapper<{entityFullName}, {dtoFullName}> {{ }}
 }}";
                     context.AddSource($"{mapperName}.ph.g.cs", sourceText);
-                    var syntaxTree = CSharpSyntaxTree.ParseText(sourceText, path: $"{mapperName}.ph.g.cs");
+                    var parseOptions = (compilation.SyntaxTrees.FirstOrDefault()?.Options as CSharpParseOptions) ?? CSharpParseOptions.Default;
+                    var syntaxTree = CSharpSyntaxTree.ParseText(sourceText, parseOptions, path: $"{mapperName}.ph.g.cs");
                     placeholderSyntaxTrees.Add(syntaxTree);
 
                     var placeholderClassNode = syntaxTree.GetRoot().DescendantNodes().OfType<ClassDeclarationSyntax>().First();
