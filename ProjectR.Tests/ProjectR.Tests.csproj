@@ -29,6 +29,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\ProjectR\ProjectR.csproj" />
+    <ProjectReference Include="..\ProjectR.Generator\ProjectR.Generator.csproj" />
   </ItemGroup>
 
 </Project>

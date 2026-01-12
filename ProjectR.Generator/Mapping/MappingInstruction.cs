@@ -1,4 +1,4 @@
-﻿namespace ProjectR;
+namespace ProjectR;
 
 /// <summary>
 /// Base class for a single mapping instruction.

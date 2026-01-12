@@ -1,4 +1,4 @@
-﻿using Microsoft.CodeAnalysis;
+using Microsoft.CodeAnalysis;
 
 namespace ProjectR
 {
@@ -23,7 +23,7 @@ namespace ProjectR
         public static readonly DiagnosticDescriptor NoValidCreationMethod = new(
             id: "PR0003",
             title: "No valid creation method found",
-            messageFormat: "ProjectR could not find a valid constructor or static factory method to create an instance of '{0}' based on the source type.",
+            messageFormat: "ProjectR could not find a valid constructor or static factory method to create an instance of '{0}' based on the source type",
             category: "ProjectR.Policies",
             defaultSeverity: DiagnosticSeverity.Error,
             isEnabledByDefault: true);
@@ -31,7 +31,7 @@ namespace ProjectR
         public static readonly DiagnosticDescriptor UnmappableConstructorParameter = new(
             id: "PR0004",
             title: "Unmappable constructor parameter",
-            messageFormat: "The parameter '{0}' of the constructor for '{1}' could not be mapped from any source property.",
+            messageFormat: "The parameter '{0}' of the constructor for '{1}' could not be mapped from any source property",
             category: "ProjectR.Policies",
             defaultSeverity: DiagnosticSeverity.Error,
             isEnabledByDefault: true);
@@ -39,10 +39,9 @@ namespace ProjectR
         public static readonly DiagnosticDescriptor UnmappedDestinationProperty = new(
             id: "PR0005",
             title: "Unmapped destination property",
-            messageFormat: "The property '{0}' on destination type '{1}' was not mapped.",
+            messageFormat: "The property '{0}' on destination type '{1}' was not mapped",
             category: "ProjectR.Policies",
             defaultSeverity: DiagnosticSeverity.Warning,
             isEnabledByDefault: true);
     }
 }
-

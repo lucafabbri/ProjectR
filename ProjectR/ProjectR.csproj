@@ -2,32 +2,9 @@
 
   <PropertyGroup>
     <TargetFramework>netstandard2.0</TargetFramework>
-    <LangVersion>latest</LangVersion>
-    <Nullable>enable</Nullable>
-    <ImplicitUsings>enable</ImplicitUsings>
     <IsPackable>true</IsPackable>
-
-    <!-- NuGet Metadata -->
     <PackageId>ProjectR</PackageId>
-    <Version>1.0.0</Version>
-    <Authors>Luca Fabbri</Authors>
-    <Description>
-      ProjectR: Unopinionated object mapping. No black magic. Just your rules, transparently automated.
-    </Description>
-    <RepositoryUrl>https://github.com/lucafabbri/ProjectR</RepositoryUrl>
-    <PackageTags>mapper;lucafabbri</PackageTags>
     <PackageReadmeFile>README.md</PackageReadmeFile>
-    <PackageLicenseExpression>MIT</PackageLicenseExpression>
-    <LangVersion>latest</LangVersion>
-
-    <!-- CRITICAL: This ensures the package is a development-time dependency and not deployed with the consuming project's output. -->
-    <DevelopmentDependency>true</DevelopmentDependency>
-
-    <!-- CRITICAL: This prevents the generator's DLL from being added to the 'lib' folder of the NuGet package. -->
-    <IncludeBuildOutput>false</IncludeBuildOutput>
-
-    <!-- Enables stricter analysis for Roslyn components. -->
-    <EnforceExtendedAnalyzerRules>true</EnforceExtendedAnalyzerRules>
   </PropertyGroup>
 
   <ItemGroup>
@@ -44,13 +21,14 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="Microsoft.CodeAnalysis.CSharp" Version="5.0.0" PrivateAssets="all" />
-    <PackageReference Include="Microsoft.CodeAnalysis.Analyzers" Version="3.11.0" PrivateAssets="all" />
     <PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="10.0.1" />
   </ItemGroup>
   
   <ItemGroup>
-    <None Include="$(OutputPath)\$(AssemblyName).dll" Pack="true" PackagePath="analyzers/dotnet/cs" Visible="false" />
+    <ProjectReference Include="..\ProjectR.Generator\ProjectR.Generator.csproj">
+      <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
+      <OutputItemType>Analyzer</OutputItemType>
+    </ProjectReference>
   </ItemGroup>
 
 </Project>

@@ -1,9 +1,9 @@
-Ôªøusing Microsoft.CodeAnalysis;
+using Microsoft.CodeAnalysis;
 
 namespace ProjectR;
 
 /// <summary>
-/// Istruzione per mappare una o pi√π propriet√† sorgente a una propriet√† di destinazione.
+/// Istruzione per mappare una o pi˘ propriet‡ sorgente a una propriet‡ di destinazione.
 /// </summary>
 public abstract class PropertyMappingInstruction : MappingInstruction
 {

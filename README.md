@@ -60,7 +60,7 @@ First, install the NuGet package into your project.
 
 ```bash
 dotnet add package ProjectR
-
+dotnet add package ProjectR.Generator
 ```
 
 ### 1. Define Your Models

@@ -1,4 +1,4 @@
-﻿using Microsoft.CodeAnalysis;
+using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using System.Collections.Generic;
 using System.Linq;
@@ -284,6 +284,52 @@ namespace ProjectR
         }
 
         private void Indent() => _sb.Append(new string(' ', _indentationLevel * 4));
+
+        public string BuildSourceForPlaceholder(string mapperName, string namespaceName, MappingPlan projectAsPlan, MappingPlan buildPlan, MappingPlan applyToPlan, HashSet<string> allUsings)
+        {
+            var dependencies = GetDependencies(projectAsPlan, buildPlan, applyToPlan);
+            BuildHeader(namespaceName, allUsings);
+            BuildClassSignature(mapperName);
+            if (dependencies.Any())
+            {
+                BuildConstructorAndFields(mapperName, dependencies);
+            }
+            // For placeholders, we use a dummy symbol reference or similar if needed for BuildXmlDoc,
+            // but usually we can skip it or use defaults. 
+            // The signature of BuildProjectAsMethod requires INamedTypeSymbol.
+            // We can fake it or overload BuildProjectAsMethod.
+            // Since this is a refactor, I won't rewrite CodeBuilder too much. 
+            // I'll skip XML docs for placeholders or use a simplified method.
+            
+            // BuildProjectAsMethod without xml doc
+             var sourceTypeName = projectAsPlan.SourceType.ToDisplayString();
+            var destTypeName = projectAsPlan.DestinationType.ToDisplayString();
+            
+            Indent(); _sb.AppendLine($"public override {destTypeName} ProjectGenerated({sourceTypeName} source)");
+            Indent(); _sb.AppendLine("{");
+            _indentationLevel++;
+            GenerateNullCheck("source", destTypeName);
+            GenerateCreationBlock("destination", projectAsPlan.DestinationType, projectAsPlan, "source");
+            _indentationLevel--;
+            Indent(); _sb.AppendLine("}");
+            _sb.AppendLine();
+
+            // BuildBuildMethod without xml doc
+             sourceTypeName = buildPlan.SourceType.ToDisplayString();
+             destTypeName = buildPlan.DestinationType.ToDisplayString();
+            
+            Indent(); _sb.AppendLine($"public override {destTypeName} BuildGenerated({sourceTypeName} source)");
+            Indent(); _sb.AppendLine("{");
+            _indentationLevel++;
+            GenerateNullCheck("source", destTypeName);
+            GenerateCreationBlock("destination", buildPlan.DestinationType, buildPlan, "source", true);
+            _indentationLevel--;
+            Indent(); _sb.AppendLine("}");
+            _sb.AppendLine();
+            
+            BuildFooter();
+            return _sb.ToString();
+        }
+
     }
 }
-

@@ -1,4 +1,4 @@
-﻿using Microsoft.CodeAnalysis;
+using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using System.Collections.Generic;
 using System.Linq;
@@ -19,7 +19,7 @@ namespace ProjectR
 
         private class ParsedPolicy
         {
-            public List<MappingStrategy> Strategies { get; set; } = new();
+            public List<GeneratorMappingStrategy> Strategies { get; set; } = new();
             public Dictionary<string, LambdaExpressionSyntax> MemberMappings { get; set; } = new();
             public Dictionary<string, LambdaExpressionSyntax> ParameterMappings { get; set; } = new();
             public HashSet<string> IgnoredMembers { get; set; } = new();
@@ -89,20 +89,20 @@ namespace ProjectR
             foreach (var strategy in strategies)
             {
                 if (plan.Creation.Method != CreationMethod.ParameterlessConstructor && plan.Creation.Method != CreationMethod.None &&
-                    (strategy == MappingStrategy.UsePublicConstructors || strategy == MappingStrategy.UseStaticFactories))
+                    (strategy == GeneratorMappingStrategy.UsePublicConstructors || strategy == GeneratorMappingStrategy.UseStaticFactories))
                 {
                     continue;
                 }
 
                 switch (strategy)
                 {
-                    case MappingStrategy.UsePublicConstructors when !isApplyTo:
+                    case GeneratorMappingStrategy.UsePublicConstructors when !isApplyTo:
                         _analysisHelper.FindBestConstructor(sourceType, destinationType, plan);
                         break;
-                    case MappingStrategy.UseStaticFactories when !isApplyTo:
+                    case GeneratorMappingStrategy.UseStaticFactories when !isApplyTo:
                         _analysisHelper.FindBestFactory(sourceType, destinationType, plan);
                         break;
-                    case MappingStrategy.UsePublicSetters:
+                    case GeneratorMappingStrategy.UsePublicSetters:
                         var ignored = isApplyTo ? policy.IgnoredMembers.Concat(new[] { "Id" }) : policy.IgnoredMembers;
                         _analysisHelper.MapRemainingProperties(sourceType, destinationType, plan, ignored);
                         break;
@@ -113,9 +113,9 @@ namespace ProjectR
         }
 
         #region Default Policy Factories
-        private ParsedPolicy CreateDefaultBuildPolicy() => new() { Strategies = new List<MappingStrategy> { MappingStrategy.UsePublicConstructors, MappingStrategy.UseStaticFactories, MappingStrategy.UsePublicSetters } };
-        private ParsedPolicy CreateDefaultApplyToPolicy() => new() { Strategies = new List<MappingStrategy> { MappingStrategy.UsePublicSetters }, IgnoredMembers = new HashSet<string> { "Id" } };
-        private ParsedPolicy CreateDefaultProjectAsPolicy() => new() { Strategies = new List<MappingStrategy> { MappingStrategy.UsePublicConstructors, MappingStrategy.UsePublicSetters } };
+        private ParsedPolicy CreateDefaultBuildPolicy() => new() { Strategies = new List<GeneratorMappingStrategy> { GeneratorMappingStrategy.UsePublicConstructors, GeneratorMappingStrategy.UseStaticFactories, GeneratorMappingStrategy.UsePublicSetters } };
+        private ParsedPolicy CreateDefaultApplyToPolicy() => new() { Strategies = new List<GeneratorMappingStrategy> { GeneratorMappingStrategy.UsePublicSetters }, IgnoredMembers = new HashSet<string> { "Id" } };
+        private ParsedPolicy CreateDefaultProjectAsPolicy() => new() { Strategies = new List<GeneratorMappingStrategy> { GeneratorMappingStrategy.UsePublicConstructors, GeneratorMappingStrategy.UsePublicSetters } };
         #endregion
 
         #region Policy Parsing Logic
@@ -139,7 +139,7 @@ namespace ProjectR
                         {
                             var constValue = _semanticModel.GetConstantValue(arg);
                             if (constValue.HasValue && constValue.Value is int strategyValue)
-                                policy.Strategies.Add((MappingStrategy)strategyValue);
+                                policy.Strategies.Add((GeneratorMappingStrategy)strategyValue);
                         }
                         break;
                     case "Ignore":
@@ -229,4 +229,3 @@ namespace ProjectR
         #endregion
     }
 }
-
