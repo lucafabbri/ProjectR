@@ -2,6 +2,17 @@
 
 All notable changes to this project will be documented in this file. See [versionize](https://github.com/versionize/versionize) for commit guidelines.
 
+<a name="1.0.0"></a>
+## [1.0.0](https://www.github.com/lucafabbri/ProjectR/releases/tag/v1.0.0) (2026-01-12)
+
+### Features
+
+* net10 supports ([d0dbf0c](https://www.github.com/lucafabbri/ProjectR/commit/d0dbf0c5ac583be5ebd9e0c33efab566e3cb34dd))
+
+### Breaking Changes
+
+* net10 supports ([d0dbf0c](https://www.github.com/lucafabbri/ProjectR/commit/d0dbf0c5ac583be5ebd9e0c33efab566e3cb34dd))
+
 <a name="0.4.3"></a>
 ## [0.4.3](https://www.github.com/lucafabbri/ProjectR/releases/tag/v0.4.3) (2026-01-11)
 
