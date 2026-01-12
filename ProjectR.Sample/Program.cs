@@ -1,4 +1,4 @@
-using Microsoft.OpenApi.Models;
+using Microsoft.OpenApi;
 using ProjectR.DI;
 using ProjectR.Sample.Application.DTOs;
 using System.Reflection;
