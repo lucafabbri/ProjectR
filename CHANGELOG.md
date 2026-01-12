@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [versionize](https://github.com/versionize/versionize) for commit guidelines.
 
+<a name="1.0.1"></a>
+## [1.0.1](https://www.github.com/lucafabbri/ProjectR/releases/tag/v1.0.1) (2026-01-12)
+
+### Bug Fixes
+
+* configure ProjectR and ProjectR.Generator for NuGet publishing ([674491b](https://www.github.com/lucafabbri/ProjectR/commit/674491bd4722960fab30bfe064fdfb5d9114d796))
+
 <a name="1.0.0"></a>
 ## [1.0.0](https://www.github.com/lucafabbri/ProjectR/releases/tag/v1.0.0) (2026-01-12)
 
