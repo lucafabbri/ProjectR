@@ -5,6 +5,8 @@
     <IsPackable>true</IsPackable>
     <PackageId>ProjectR</PackageId>
     <PackageReadmeFile>README.md</PackageReadmeFile>
+    <Version>1.0.1</Version>
+    <GeneratePackageOnBuild>True</GeneratePackageOnBuild>
   </PropertyGroup>
 
   <ItemGroup>
