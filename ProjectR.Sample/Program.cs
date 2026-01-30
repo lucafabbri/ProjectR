@@ -1,15 +1,17 @@
 using Microsoft.OpenApi;
-using ProjectR.DI;
+using ProjectR.Sample.Generated;
 using ProjectR.Sample.Application.DTOs;
 using System.Reflection;
+
+[assembly: ProjectR.Attributes.DiscoverMappers]
 
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
 builder.Services.AddControllers();
 
-// Aggiungi la scansione e registrazione dei mapper
-builder.Services.AddMappers(typeof(ProductDto).Assembly);
+// Source Generator registration (AOT-compatible)
+builder.Services.AddGeneratedMappers();
 
 // *** 1. Configurazione avanzata di Swagger/OpenAPI ***
 builder.Services.AddEndpointsApiExplorer();

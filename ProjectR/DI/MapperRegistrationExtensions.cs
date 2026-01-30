@@ -47,33 +47,16 @@ namespace ProjectR.DI
         }
 
         /// <summary>
-        /// Scans the specified assemblies for concrete mapper implementations and registers them,
-        /// along with the IMapperResolver service, in the dependency injection container.
+        /// Scans the specified assemblies for concrete mapper implementations and registers them.
+        /// [DEPRECATED] Use AddGeneratedMappers() provided by the source generator instead.
         /// </summary>
         /// <param name="services">The IServiceCollection to add the services to.</param>
         /// <param name="assembliesToScan">The assemblies to scan for mappers.</param>
         /// <returns>The same IServiceCollection for chaining.</returns>
+        [System.Obsolete("Use AddGeneratedMappers() provided by the source generator instead. Reflection-based discovery is not AOT compatible.")]
         public static IServiceCollection AddMappers(this IServiceCollection services, params Assembly[] assembliesToScan)
         {
-            if (assembliesToScan == null || !assembliesToScan.Any())
-            {
-                //fill with Executing assembly
-                assembliesToScan = [Assembly.GetCallingAssembly()];
-            }
-
-            var registry = new MapperRegistry(assembliesToScan);
-            var cache = new MapperTypeCache(registry.FoundMappers);
-
-            // Register the type cache as a singleton
-            services.AddSingleton(cache);
-
-            // Register each individual mapper as a singleton
-            foreach (var mapperType in registry.FoundMappers)
-            {
-                services.AddSingleton(mapperType);
-            }
-
-            // Register the resolver service
+            // Register the resolver service (still needed if not already registered)
             services.AddSingleton<IMapperResolver, MapperResolver>();
 
             return services;

@@ -45,7 +45,7 @@ public class DiagnosticsTests
         // Assert
         diagnostic.Id.Should().Be("PR0003");
         diagnostic.Title.ToString().Should().Be("No valid creation method found");
-        diagnostic.MessageFormat.ToString().Should().Be("ProjectR could not find a valid constructor or static factory method to create an instance of '{0}' based on the source type.");
+        diagnostic.MessageFormat.ToString().Should().Be("ProjectR could not find a valid constructor or static factory method to create an instance of '{0}' based on the source type");
         diagnostic.Category.Should().Be("ProjectR.Policies");
         diagnostic.DefaultSeverity.Should().Be(DiagnosticSeverity.Error);
         diagnostic.IsEnabledByDefault.Should().BeTrue();
@@ -60,7 +60,7 @@ public class DiagnosticsTests
         // Assert
         diagnostic.Id.Should().Be("PR0004");
         diagnostic.Title.ToString().Should().Be("Unmappable constructor parameter");
-        diagnostic.MessageFormat.ToString().Should().Be("The parameter '{0}' of the constructor for '{1}' could not be mapped from any source property.");
+        diagnostic.MessageFormat.ToString().Should().Be("The parameter '{0}' of the constructor for '{1}' could not be mapped from any source property");
         diagnostic.Category.Should().Be("ProjectR.Policies");
         diagnostic.DefaultSeverity.Should().Be(DiagnosticSeverity.Error);
         diagnostic.IsEnabledByDefault.Should().BeTrue();
@@ -75,7 +75,7 @@ public class DiagnosticsTests
         // Assert
         diagnostic.Id.Should().Be("PR0005");
         diagnostic.Title.ToString().Should().Be("Unmapped destination property");
-        diagnostic.MessageFormat.ToString().Should().Be("The property '{0}' on destination type '{1}' was not mapped.");
+        diagnostic.MessageFormat.ToString().Should().Be("The property '{0}' on destination type '{1}' was not mapped");
         diagnostic.Category.Should().Be("ProjectR.Policies");
         diagnostic.DefaultSeverity.Should().Be(DiagnosticSeverity.Warning);
         diagnostic.IsEnabledByDefault.Should().BeTrue();

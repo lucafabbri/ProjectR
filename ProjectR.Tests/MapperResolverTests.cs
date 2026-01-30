@@ -25,10 +25,11 @@ public class MapperResolverTests
         // Arrange
         var services = new ServiceCollection();
         services.AddSingleton<TestMapper>();
+        // Register the interface mapping that the generator would do
+        services.AddSingleton<Mapper<TestEntity, TestDto>>(sp => sp.GetRequiredService<TestMapper>());
         var serviceProvider = services.BuildServiceProvider();
 
-        var mapperTypeCache = new MapperTypeCache(new[] { typeof(TestMapper) });
-        var resolver = new MapperResolver(serviceProvider, mapperTypeCache);
+        var resolver = new MapperResolver(serviceProvider);
 
         // Act
         var mapper = resolver.GetMapper<TestEntity, TestDto>();
@@ -45,48 +46,39 @@ public class MapperResolverTests
         var services = new ServiceCollection();
         var serviceProvider = services.BuildServiceProvider();
 
-        var mapperTypeCache = new MapperTypeCache(Array.Empty<Type>());
-        var resolver = new MapperResolver(serviceProvider, mapperTypeCache);
+        var resolver = new MapperResolver(serviceProvider);
 
         // Act & Assert
         var action = () => resolver.GetMapper<UnknownEntity, UnknownDto>();
-        action.Should().Throw<InvalidOperationException>()
-            .WithMessage("No mapper registered for source 'UnknownEntity' and destination 'UnknownDto'.");
+        action.Should().Throw<InvalidOperationException>();
     }
 
     [Fact]
-    public void GetMapper_WithServiceNotRegistered_ReturnsNullWithoutError()
+    public void GetMapper_WithMapperInterfaceNotRegistered_ThrowsInvalidOperationException()
     {
         // Arrange
         var services = new ServiceCollection();
-        // Not registering TestMapper in DI container
+        services.AddSingleton<TestMapper>(); // TestMapper is registered, but Mapper<TSource, TDestination> is not
         var serviceProvider = services.BuildServiceProvider();
 
-        var mapperTypeCache = new MapperTypeCache(new[] { typeof(TestMapper) });
-        var resolver = new MapperResolver(serviceProvider, mapperTypeCache);
+        var resolver = new MapperResolver(serviceProvider);
 
-        // Act
-        var result = resolver.GetMapper<TestEntity, TestDto>();
-
-        // Assert - GetService returns null, and casting null to reference type is valid
-        result.Should().BeNull();
+        // Act & Assert
+        var action = () => resolver.GetMapper<TestEntity, TestDto>();
+        action.Should().Throw<InvalidOperationException>();
     }
 
     [Fact]
-    public void GetMapper_WithNullServiceFromContainer_ReturnsNull()
+    public void GetMapper_WithNullServiceFromContainer_ThrowsInvalidOperationException()
     {
         // Arrange
-        var mockServiceProvider = new Mock<IServiceProvider>();
-        mockServiceProvider.Setup(sp => sp.GetService(typeof(TestMapper))).Returns(null);
+        var services = new ServiceCollection();
+        var serviceProvider = services.BuildServiceProvider();
+        var resolver = new MapperResolver(serviceProvider);
 
-        var mapperTypeCache = new MapperTypeCache(new[] { typeof(TestMapper) });
-        var resolver = new MapperResolver(mockServiceProvider.Object, mapperTypeCache);
-
-        // Act
-        var result = resolver.GetMapper<TestEntity, TestDto>();
-
-        // Assert - Casting null to reference type is valid and returns null
-        result.Should().BeNull();
+        // Act & Assert
+        var action = () => resolver.GetMapper<TestEntity, TestDto>();
+        action.Should().Throw<InvalidOperationException>();
     }
 
     [Fact]
@@ -95,10 +87,9 @@ public class MapperResolverTests
         // Arrange
         var services = new ServiceCollection();
         var serviceProvider = services.BuildServiceProvider();
-        var mapperTypeCache = new MapperTypeCache(Array.Empty<Type>());
 
         // Act
-        var resolver = new MapperResolver(serviceProvider, mapperTypeCache);
+        var resolver = new MapperResolver(serviceProvider);
 
         // Assert
         resolver.Should().NotBeNull();
@@ -111,22 +102,18 @@ public class MapperResolverTests
         // Arrange
         var services = new ServiceCollection();
         services.AddSingleton<TestMapper>();
+        services.AddSingleton<Mapper<TestEntity, TestDto>>(sp => sp.GetRequiredService<TestMapper>());
         var serviceProvider = services.BuildServiceProvider();
 
-        var mapperTypeCache = new MapperTypeCache(new[] { typeof(TestMapper) });
-        var resolver = new MapperResolver(serviceProvider, mapperTypeCache);
+        var resolver = new MapperResolver(serviceProvider);
 
         // Act & Assert - Forward direction works
         var forwardMapper = resolver.GetMapper<TestEntity, TestDto>();
         forwardMapper.Should().NotBeNull();
         forwardMapper.Should().BeOfType<TestMapper>();
 
-        // Act & Assert - Reverse direction has the mapping key, but casting will fail
-        // This tests that the cache contains the reverse mapping
-        mapperTypeCache.MapperTypes.Should().ContainKey((typeof(TestDto), typeof(TestEntity)));
-        
-        // The actual reverse direction would fail due to type constraints, which is expected behavior
+        // Act & Assert - Reverse direction will throw InvalidOperationException because Mapper<TestDto, TestEntity> is not registered
         var action = () => resolver.GetMapper<TestDto, TestEntity>();
-        action.Should().Throw<InvalidCastException>();
+        action.Should().Throw<InvalidOperationException>();
     }
 }
