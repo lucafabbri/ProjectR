@@ -26,7 +26,9 @@ In modern applications following Clean or Onion Architecture, mapping objects be
 
 * **Custom Mapping Policies**: A powerful fluent API (`ConfigureMappingPolicies`) lets you override the default behavior for creating objects and mapping individual properties and constructor parameters.
 
-* **Dependency Injection Integration**: Provides `AddMappers()` and `IMapperResolver` for easy registration and resolution of mappers in your application's DI container.
+* **Dependency Injection Integration**: Provides `AddGeneratedMappers()` for high-performance, reflection-free registration of mappers.
+
+* **Cross-Assembly Discovery**: Easily register mappers across multiple projects using the `[assembly: DiscoverMappers]` attribute.
 
 * **Nested & Collection Mapping**: Automatically discovers and uses other mappers for complex, nested objects and collections.
 
@@ -48,7 +50,9 @@ The core of ProjectR is a Roslyn Source Generator that activates during compilat
 
    * If it finds a static method named `ConfigureMappingPolicies(IPolicyConfiguration config)`, it parses the user-defined rules and applies them to override the default behavior.
 
-4. **Code Generation**: It generates a `partial class` implementation in a `.g.cs` file containing the `ProjectGenerated` and `BuildGenerated` methods. The public `Project` and `Build` methods in your base class then call these generated implementations. This generated code is compiled along with the rest of your project.
+4. **Code Generation**: It generates:
+   * A `partial class` implementation in a `.g.cs` file containing the `ProjectGenerated` and `BuildGenerated` methods.
+   * A `GeneratedMapperRegistrations` class containing an `AddGeneratedMappers()` extension method for `IServiceCollection`. This method registers all mappers in the assembly directly into the DI container without using reflection.
 
 ## 🚀 Getting Started: Example
 
@@ -134,25 +138,28 @@ public partial class CreateProductDtoMapper
 
 ### 3. Configure Dependency Injection
 
-In your `Program.cs`, use the `AddMappers` extension method to scan your assemblies and register all found mappers.
+In your `Program.cs`, call `AddGeneratedMappers()` to register all mappers. To discover mappers from referenced assemblies, add the `[assembly: DiscoverMappers]` attribute to your assembly.
 
 ```csharp
 // Program.cs
-using ProjectR.Hosting;
-using YourApp.Application.DTOs; // The assembly containing your DTOs
+using ProjectR.Generated; // The namespace where registrations are generated
+
+[assembly: DiscoverMappers] // Enable discovery of mappers in referenced projects
 
 var builder = WebApplication.CreateBuilder(args);
 
 // ... other services
 
-// Scan the specified assembly for mappers and register them and the resolver.
-builder.Services.AddMappers(typeof(CreateProductDto).Assembly);
+// High-performance registration generated at compile-time.
+builder.Services.AddGeneratedMappers();
 
 var app = builder.Build();
 
 // ...
-
 ```
+
+> [!NOTE]
+> The old reflection-based `AddMappers()` is now deprecated and should be replaced with `AddGeneratedMappers()`.
 
 ### 4. Use the Mapper in Your Services
 
