@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [versionize](https://github.com/versionize/versionize) for commit guidelines.
 
+<a name="1.1.0"></a>
+## [1.1.0](https://www.github.com/mrdevrobot/ProjectR/releases/tag/v1.1.0) (2026-01-31)
+
+### Features
+
+* Auto-inject DiscoverMappersAttribute via targets file ([b23e07e](https://www.github.com/mrdevrobot/ProjectR/commit/b23e07eb65aedbf1cf03676376093da784ab1784))
+
 <a name="1.0.2"></a>
 ## [1.0.2](https://www.github.com/mrdevrobot/ProjectR/releases/tag/v1.0.2) (2026-01-30)
 
