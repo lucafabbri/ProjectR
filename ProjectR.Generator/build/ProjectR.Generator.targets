@@ -1,0 +1,5 @@
+<Project>
+  <ItemGroup Condition="'$(DisableProjectRAutoDiscovery)' == ''">
+    <AssemblyAttribute Include="ProjectR.Attributes.DiscoverMappersAttribute" />
+  </ItemGroup>
+</Project>
