@@ -28,7 +28,7 @@ In modern applications following Clean or Onion Architecture, mapping objects be
 
 * **Dependency Injection Integration**: Provides `AddGeneratedMappers()` for high-performance, reflection-free registration of mappers.
 
-* **Cross-Assembly Discovery**: Easily register mappers across multiple projects using the `[assembly: DiscoverMappers]` attribute.
+* **Cross-Assembly Discovery**: Automatically registers mappers across multiple projects. The required `[assembly: DiscoverMappers]` attribute is injected automatically by the NuGet package.
 
 * **Nested & Collection Mapping**: Automatically discovers and uses other mappers for complex, nested objects and collections.
 
@@ -144,7 +144,8 @@ In your `Program.cs`, call `AddGeneratedMappers()` to register all mappers. To d
 // Program.cs
 using ProjectR.Generated; // The namespace where registrations are generated
 
-[assembly: DiscoverMappers] // Enable discovery of mappers in referenced projects
+// Note: [assembly: DiscoverMappers] is automatically injected by the NuGet package.
+// You do not need to add it manually unless you have disabled auto-discovery.
 
 var builder = WebApplication.CreateBuilder(args);
 
